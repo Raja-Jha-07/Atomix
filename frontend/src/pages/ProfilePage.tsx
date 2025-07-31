@@ -32,20 +32,16 @@ const ProfilePage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
   // Fetch current food card balance
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        setLoading(true);
         const response = await paymentService.getFoodCardBalance();
         setCurrentBalance(response.balance);
       } catch (err: any) {
         setError('Failed to load food card balance');
-      } finally {
-        setLoading(false);
       }
     };
 

@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { AccountBalance, Add } from '@mui/icons-material';
 import PaymentMethodSelector from './PaymentMethodSelector';
-import { paymentService, PaymentResponse } from '../../services/paymentService';
+import { paymentService } from '../../services/paymentService';
 
 interface FoodCardTopUpProps {
   open: boolean;

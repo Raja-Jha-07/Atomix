@@ -132,9 +132,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const getStatsToShow = () => {
-    return user?.role === 'EMPLOYEE' ? employeeStats : adminStats;
-  };
+
 
   const renderEmployeeDashboard = () => (
     <>

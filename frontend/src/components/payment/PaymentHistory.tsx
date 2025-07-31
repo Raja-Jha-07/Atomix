@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -45,7 +45,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -61,11 +61,11 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, page, rowsPerPage]);
 
   useEffect(() => {
     fetchPayments();
-  }, [page, rowsPerPage, userId]);
+  }, [fetchPayments]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
