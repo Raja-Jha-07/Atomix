@@ -1,22 +1,24 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: atomix-postgres
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: atomix-mysql
     environment:
-      POSTGRES_DB: atomix_cafeteria
-      POSTGRES_USER: atomix_user
-      POSTGRES_PASSWORD: atomix_password
+      MYSQL_DATABASE: atomix_cafeteria
+      MYSQL_USER: atomix_user
+      MYSQL_PASSWORD: atomix_password
+      MYSQL_ROOT_PASSWORD: root_password
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - atomix-network
     restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
 
   # MongoDB Database
   mongodb:
@@ -56,7 +58,7 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       DB_USERNAME: atomix_user
       DB_PASSWORD: atomix_password
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/atomix_cafeteria
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/atomix_cafeteria?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATA_MONGODB_URI: mongodb://admin:admin123@mongodb:27017/atomix_cafeteria_nosql?authSource=admin
       SPRING_DATA_REDIS_HOST: redis
       JWT_SECRET: myVerySecretJWTKey123456789
@@ -64,7 +66,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - mysql
       - mongodb
       - redis
     networks:
@@ -112,16 +114,18 @@ services:
     restart: unless-stopped
 
   # Database Administration Tools
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: atomix-pgadmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: atomix-phpmyadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@atomix.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: atomix_user
+      PMA_PASSWORD: atomix_password
     ports:
       - "5050:80"
     depends_on:
-      - postgres
+      - mysql
     networks:
       - atomix-network
     restart: unless-stopped
@@ -144,7 +148,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  mysql_data:
     driver: local
   mongodb_data:
     driver: local
