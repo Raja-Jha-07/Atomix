@@ -18,6 +18,7 @@ import {
   Store,
   Person,
   Settings,
+  Payment,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
@@ -46,6 +47,11 @@ const navigationItems: NavigationItem[] = [
     text: 'Orders',
     icon: <ShoppingCart />,
     path: '/orders',
+  },
+  {
+    text: 'Payments',
+    icon: <Payment />,
+    path: '/payments',
   },
   {
     text: 'Analytics',
