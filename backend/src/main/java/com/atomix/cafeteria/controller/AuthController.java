@@ -145,4 +145,12 @@ public class AuthController {
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(new ApiResponse(true, "User logged out successfully"));
     }
+
+    @Operation(summary = "OAuth2 Login", description = "Initiate OAuth2 login flow")
+    @GetMapping("/oauth2/{provider}")
+    public ResponseEntity<?> oauth2Login(@PathVariable String provider) {
+        // This endpoint will be handled by Spring Security OAuth2
+        // The actual OAuth2 flow will redirect to the provider
+        return ResponseEntity.ok(new ApiResponse(true, "Redirecting to " + provider + " for authentication"));
+    }
 } 

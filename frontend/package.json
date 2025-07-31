@@ -4,27 +4,27 @@
   "description": "Frontend for Atomix Cafeteria Management System",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@hookform/resolvers": "^3.3.2",
+    "@mui/icons-material": "^5.15.0",
+    "@mui/material": "^5.18.0",
     "@reduxjs/toolkit": "^2.0.1",
     "@types/node": "^18.19.3",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "axios": "^1.6.2",
+    "dayjs": "^1.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.48.2",
     "react-redux": "^9.0.4",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
+    "recharts": "^2.8.0",
     "socket.io-client": "^4.7.4",
     "typescript": "^4.9.5",
     "web-vitals": "^3.5.0",
-    "@mui/material": "^5.15.0",
-    "@mui/icons-material": "^5.15.0",
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "dayjs": "^1.11.10",
-    "recharts": "^2.8.0",
-    "react-hook-form": "^7.48.2",
-    "@hookform/resolvers": "^3.3.2",
     "yup": "^1.4.0"
   },
   "devDependencies": {
@@ -76,4 +76,4 @@
     ]
   },
   "proxy": "http://localhost:8080"
-} 
+}

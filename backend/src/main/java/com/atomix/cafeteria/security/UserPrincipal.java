@@ -37,6 +37,22 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         this.authorities = authorities;
     }
 
+    // Constructor for OAuth2 users without User entity
+    public UserPrincipal(Map<String, Object> attributes) {
+        this.attributes = attributes;
+        this.email = (String) attributes.get("email");
+        String name = (String) attributes.get("name");
+        if (name != null) {
+            String[] nameParts = name.split(" ");
+            this.firstName = nameParts[0];
+            this.lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+        }
+        this.role = "EMPLOYEE"; // Default role for OAuth2 users
+        this.isActive = true;
+        this.emailVerified = true;
+        this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
+    }
+
     public static UserPrincipal create(User user) {
         List<GrantedAuthority> authorities = Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_" + user.getRole().name())

@@ -13,6 +13,8 @@ import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
+import OAuth2RedirectHandler from './components/auth/OAuth2RedirectHandler';
+import TestGoogleAuth from './components/auth/TestGoogleAuth';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAppSelector } from './hooks/redux';
 
@@ -30,6 +32,8 @@ const App: React.FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route path="/auth/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+            <Route path="/test-google-auth" element={<TestGoogleAuth />} />
             
             {/* Protected routes */}
             <Route path="/" element={
