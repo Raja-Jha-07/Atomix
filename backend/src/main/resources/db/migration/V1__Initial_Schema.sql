@@ -3,7 +3,7 @@
 
 -- Users table
 CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
@@ -20,12 +20,12 @@ CREATE TABLE users (
     provider_id VARCHAR(100),
     food_card_balance DECIMAL(10,2) DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Vendors table
 CREATE TABLE vendors (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
     description TEXT,
     contact_email VARCHAR(255) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE vendors (
     average_rating DECIMAL(3,2) DEFAULT 0.00,
     total_reviews INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Vendor floor mappings
@@ -56,7 +56,7 @@ CREATE TABLE vendor_floor_mappings (
 
 -- Menu items table
 CREATE TABLE menu_items (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL CHECK (price > 0),
@@ -78,7 +78,7 @@ CREATE TABLE menu_items (
     available_from TIMESTAMP,
     available_until TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 );
 
@@ -100,7 +100,7 @@ CREATE TABLE menu_item_tags (
 
 -- Orders table
 CREATE TABLE orders (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     order_number VARCHAR(50) UNIQUE NOT NULL,
     user_id BIGINT NOT NULL,
     vendor_id BIGINT NOT NULL,
@@ -122,14 +122,14 @@ CREATE TABLE orders (
     cancelled_at TIMESTAMP,
     cancellation_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (vendor_id) REFERENCES vendors(id)
 );
 
 -- Order items table
 CREATE TABLE order_items (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     order_id BIGINT NOT NULL,
     menu_item_id BIGINT NOT NULL,
     quantity INTEGER NOT NULL CHECK (quantity > 0),
@@ -169,23 +169,5 @@ CREATE INDEX idx_orders_order_number ON orders(order_number);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX idx_order_items_menu_item_id ON order_items(menu_item_id);
 
--- Triggers for updated_at columns
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_vendors_updated_at BEFORE UPDATE ON vendors
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_menu_items_updated_at BEFORE UPDATE ON menu_items
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column(); 
+-- MySQL automatically updates the updated_at column with ON UPDATE CURRENT_TIMESTAMP
+-- No triggers needed for MySQL 

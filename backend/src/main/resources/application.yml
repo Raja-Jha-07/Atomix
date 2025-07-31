@@ -2,12 +2,12 @@ spring:
   application:
     name: atomix-cafeteria
   
-  # PostgreSQL Configuration
+  # MySQL Configuration
   datasource:
-    url: jdbc:postgresql://localhost:5432/atomix_cafeteria
+    url: jdbc:mysql://localhost:3306/atomix_cafeteria?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:atomix_user}
     password: ${DB_PASSWORD:atomix_password}
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -18,11 +18,11 @@ spring:
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
         use_sql_comments: true
         jdbc:
@@ -38,7 +38,7 @@ spring:
   
   # Flyway Configuration
   flyway:
-    enabled: true
+    enabled: false
     baseline-on-migrate: true
     locations: classpath:db/migration
     baseline-version: 1
