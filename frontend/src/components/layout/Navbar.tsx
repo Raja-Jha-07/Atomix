@@ -1,107 +1,151 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
   Typography,
-  Button,
-  Box,
   IconButton,
-  Badge,
-  Avatar,
   Menu,
   MenuItem,
+  Avatar,
+  Box,
+  Badge,
+  Tooltip,
 } from '@mui/material';
 import {
-  ShoppingCart,
   Notifications,
   AccountCircle,
+  Logout,
+  Settings,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { useLogoutMutation } from '../../store/api/authApi';
 import { logout } from '../../store/slices/authSlice';
 
 const Navbar: React.FC = () => {
-  const { user } = useAppSelector((state) => state.auth);
-  const { currentOrder } = useAppSelector((state) => state.order);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { user } = useAppSelector((state) => state.auth);
+  
+  const [logoutMutation] = useLogoutMutation();
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    handleClose();
+  const handleLogout = async () => {
+    try {
+      await logoutMutation().unwrap();
+    } catch (error) {
+      // Even if the server logout fails, we should still clear local state
+      console.error('Server logout failed:', error);
+    } finally {
+      dispatch(logout());
+      navigate('/login');
+      handleMenuClose();
+    }
   };
 
-  const cartItemCount = currentOrder.reduce((total, item) => total + item.quantity, 0);
+  const handleProfile = () => {
+    navigate('/profile');
+    handleMenuClose();
+  };
+
+  const handleSettings = () => {
+    navigate('/settings');
+    handleMenuClose();
+  };
+
+  const isMenuOpen = Boolean(anchorEl);
+
+  const getUserInitials = () => {
+    if (!user) return '';
+    return `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  const renderMenu = (
+    <Menu
+      anchorEl={anchorEl}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+      keepMounted
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+      open={isMenuOpen}
+      onClose={handleMenuClose}
+    >
+      <MenuItem onClick={handleProfile}>
+        <AccountCircle sx={{ mr: 1 }} />
+        Profile
+      </MenuItem>
+      <MenuItem onClick={handleSettings}>
+        <Settings sx={{ mr: 1 }} />
+        Settings
+      </MenuItem>
+      <MenuItem onClick={handleLogout}>
+        <Logout sx={{ mr: 1 }} />
+        Logout
+      </MenuItem>
+    </Menu>
+  );
 
   return (
-    <AppBar position="static" elevation={1}>
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Atomix Cafeteria
-        </Typography>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static" elevation={1}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Atomix Cafeteria
+          </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Cart Icon */}
-          <IconButton color="inherit">
-            <Badge badgeContent={cartItemCount} color="secondary">
-              <ShoppingCart />
-            </Badge>
-          </IconButton>
-
-          {/* Notifications */}
-          <IconButton color="inherit">
-            <Badge badgeContent={3} color="secondary">
-              <Notifications />
-            </Badge>
-          </IconButton>
-
-          {/* User Menu */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2">
-              {user?.firstName} {user?.lastName}
-            </Typography>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              color="inherit"
-            >
-              <Avatar sx={{ width: 32, height: 32 }}>
-                {user?.firstName?.[0]}{user?.lastName?.[0]}
-              </Avatar>
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>Settings</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
+            {user && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 2 }}>
+                <Typography variant="body2" color="inherit">
+                  Welcome, {user.firstName}
+                </Typography>
+                <Typography variant="caption" color="inherit" sx={{ opacity: 0.8 }}>
+                  ({user.role})
+                </Typography>
+              </Box>
+            )}
+
+            <Tooltip title="Notifications">
+              <IconButton color="inherit">
+                <Badge badgeContent={4} color="error">
+                  <Notifications />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Account">
+              <IconButton
+                size="large"
+                edge="end"
+                aria-label="account of current user"
+                aria-controls="primary-search-account-menu"
+                aria-haspopup="true"
+                onClick={handleProfileMenuOpen}
+                color="inherit"
+              >
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                  {getUserInitials()}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
           </Box>
-        </Box>
-      </Toolbar>
-    </AppBar>
+        </Toolbar>
+      </AppBar>
+      {renderMenu}
+    </Box>
   );
 };
 

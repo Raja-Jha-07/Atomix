@@ -18,7 +18,9 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { loginUser, clearError } from '../../store/slices/authSlice';
+import { useLoginMutation } from '../../store/api/authApi';
+import { setCredentials, clearError, setError } from '../../store/slices/authSlice';
+import TestCredentials from '../../components/demo/TestCredentials';
 
 interface LoginForm {
   email: string;
@@ -36,9 +38,11 @@ const LoginPage: React.FC = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   
-  const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+  const [login, { isLoading }] = useLoginMutation();
+  const { error, isAuthenticated } = useAppSelector((state) => state.auth);
   
   const from = (location.state as any)?.from?.pathname || '/';
+  const successMessage = (location.state as any)?.message;
 
   const {
     register,
@@ -61,7 +65,27 @@ const LoginPage: React.FC = () => {
   }, [dispatch]);
 
   const onSubmit = async (data: LoginForm) => {
-    dispatch(loginUser(data));
+    try {
+      dispatch(clearError());
+      const response = await login(data).unwrap();
+      
+      // Transform the response to match our user interface
+      const user = {
+        id: response.id.toString(),
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        role: response.role as 'EMPLOYEE' | 'VENDOR' | 'ADMIN' | 'CAFETERIA_MANAGER',
+      };
+      
+      dispatch(setCredentials({
+        user,
+        token: response.token,
+        refreshToken: response.refreshToken,
+      }));
+    } catch (error: any) {
+      dispatch(setError(error?.data?.message || 'Login failed'));
+    }
   };
 
   const handleTogglePasswordVisibility = () => {
@@ -77,6 +101,7 @@ const LoginPage: React.FC = () => {
       sx={{
         minHeight: '100vh',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -93,6 +118,12 @@ const LoginPage: React.FC = () => {
               Sign in to your cafeteria account
             </Typography>
           </Box>
+
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -182,6 +213,11 @@ const LoginPage: React.FC = () => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Test Credentials Component */}
+      <Box sx={{ maxWidth: 400, width: '100%' }}>
+        <TestCredentials />
+      </Box>
     </Box>
   );
 };
