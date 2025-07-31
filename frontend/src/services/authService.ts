@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { User } from '../store/slices/authSlice';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 const authAPI = {
   login: async (credentials: { email: string; password: string }) => {

@@ -1,228 +1,211 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   Grid,
   Card,
   CardContent,
   Typography,
-  Button,
+  Avatar,
   Chip,
-  Paper,
-  LinearProgress,
 } from '@mui/material';
 import {
-  Restaurant,
-  ShoppingCart,
   TrendingUp,
-  People,
-  Schedule,
-  LocalDining,
+  ShoppingCart,
+  Person,
+  Restaurant,
 } from '@mui/icons-material';
-import { useAppSelector, useAppDispatch } from '../hooks/redux';
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactElement;
-  color: 'primary' | 'secondary' | 'success' | 'warning' | 'error';
-  change?: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, change }) => {
-  return (
-    <Card>
-      <CardContent>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Box>
-            <Typography color="textSecondary" gutterBottom variant="overline">
-              {title}
-            </Typography>
-            <Typography variant="h4" component="div">
-              {value}
-            </Typography>
-            {change && (
-              <Typography variant="body2" color={color}>
-                {change}
-              </Typography>
-            )}
-          </Box>
-          <Box
-            sx={{
-              backgroundColor: `${color}.light`,
-              borderRadius: '50%',
-              p: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {React.cloneElement(icon, { sx: { color: `${color}.main` } })}
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-};
+import { useAppSelector } from '../hooks/redux';
 
 const Dashboard: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
-  const { cafeterias } = useAppSelector((state) => state.liveStatus);
-  const { currentOrder } = useAppSelector((state) => state.order);
-  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    // Fetch dashboard data
-    // dispatch(fetchDashboardData());
-  }, [dispatch]);
+  const stats = [
+    {
+      title: 'Total Orders',
+      value: '1,234',
+      icon: <ShoppingCart />,
+      color: 'primary',
+      change: '+12%',
+    },
+    {
+      title: 'Revenue',
+      value: '₹45,678',
+      icon: <TrendingUp />,
+      color: 'success',
+      change: '+8%',
+    },
+    {
+      title: 'Active Users',
+      value: '156',
+      icon: <Person />,
+      color: 'info',
+      change: '+15%',
+    },
+    {
+      title: 'Menu Items',
+      value: '78',
+      icon: <Restaurant />,
+      color: 'warning',
+      change: '+3%',
+    },
+  ];
 
-  const activeOrders = 12;
-  const todayRevenue = 2450;
-  const peopleCounting = cafeterias.reduce((total, cafeteria) => total + cafeteria.currentCapacity, 0);
-  const cartItemsCount = currentOrder.length;
+  const getRoleWelcomeMessage = () => {
+    switch (user?.role) {
+      case 'ADMIN':
+        return 'Admin Dashboard - Full System Overview';
+      case 'CAFETERIA_MANAGER':
+        return 'Manager Dashboard - Cafeteria Operations';
+      case 'VENDOR':
+        return 'Vendor Dashboard - Your Menu & Orders';
+      case 'EMPLOYEE':
+        return 'Employee Dashboard - Welcome to Atomix Cafeteria';
+      default:
+        return 'Welcome to Atomix Cafeteria';
+    }
+  };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Welcome back, {user?.firstName}!
-      </Typography>
-      
-      <Typography variant="body1" color="textSecondary" paragraph>
-        Here's what's happening at the cafeteria today
-      </Typography>
-
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Active Orders"
-            value={activeOrders}
-            icon={<ShoppingCart />}
-            color="primary"
-            change="+12% from yesterday"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Today's Revenue"
-            value={`₹${todayRevenue}`}
-            icon={<TrendingUp />}
-            color="success"
-            change="+8% from yesterday"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="People in Cafeterias"
-            value={peopleCounting}
-            icon={<People />}
-            color="warning"
-            change="Current count"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Cart Items"
-            value={cartItemsCount}
-            icon={<LocalDining />}
-            color="secondary"
-            change="Your current cart"
-          />
-        </Grid>
-      </Grid>
+    <Box sx={{ p: 3 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          {getRoleWelcomeMessage()}
+        </Typography>
+        <Typography variant="subtitle1" color="textSecondary">
+          {user ? `Welcome back, ${user.firstName}!` : 'Welcome to the dashboard'}
+        </Typography>
+      </Box>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Today's Popular Items
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              {[
-                { name: 'Chicken Biryani', orders: 45, trend: '+15%' },
-                { name: 'Paneer Butter Masala', orders: 32, trend: '+8%' },
-                { name: 'Dal Tadka', orders: 28, trend: '+3%' },
-                { name: 'Veg Fried Rice', orders: 24, trend: '-2%' },
-              ].map((item, index) => (
-                <Box key={index} sx={{ mb: 2 }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Typography variant="body1">{item.name}</Typography>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="body2">{item.orders} orders</Typography>
-                      <Chip 
-                        label={item.trend} 
-                        size="small" 
-                        color={item.trend.startsWith('+') ? 'success' : 'error'}
-                      />
-                    </Box>
-                  </Box>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={(item.orders / 50) * 100} 
-                    sx={{ mt: 1 }}
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, mb: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Quick Actions
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button 
-                variant="contained" 
-                startIcon={<Restaurant />}
-                fullWidth
-              >
-                Browse Menu
-              </Button>
-              <Button 
-                variant="outlined" 
-                startIcon={<ShoppingCart />}
-                fullWidth
-              >
-                View Cart ({cartItemsCount})
-              </Button>
-              <Button 
-                variant="outlined" 
-                startIcon={<Schedule />}
-                fullWidth
-              >
-                Order History
-              </Button>
-            </Box>
-          </Paper>
-
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Cafeteria Status
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              {cafeterias.length > 0 ? (
-                cafeterias.map((cafeteria) => (
-                  <Box key={cafeteria.id} sx={{ mb: 2 }}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2">{cafeteria.floorName}</Typography>
-                      <Chip 
-                        label={cafeteria.isOpen ? 'Open' : 'Closed'} 
-                        color={cafeteria.isOpen ? 'success' : 'error'}
-                        size="small"
-                      />
-                    </Box>
-                    <Typography variant="caption" color="textSecondary">
-                      {cafeteria.currentCapacity}/{cafeteria.maxCapacity} people
+        {/* Stats Cards */}
+        {stats.map((stat, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography color="textSecondary" gutterBottom variant="overline">
+                      {stat.title}
                     </Typography>
+                    <Typography variant="h4">
+                      {stat.value}
+                    </Typography>
+                    <Chip
+                      label={stat.change}
+                      color={stat.color as any}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    />
                   </Box>
-                ))
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  No cafeteria data available
-                </Typography>
+                  <Avatar
+                    sx={{
+                      backgroundColor: `${stat.color}.main`,
+                      height: 56,
+                      width: 56,
+                    }}
+                  >
+                    {stat.icon}
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+
+        {/* Quick Actions */}
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Quick Actions
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Card variant="outlined" sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}>
+                    <Typography variant="subtitle1">Browse Menu</Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      View today's menu and place orders
+                    </Typography>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Card variant="outlined" sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}>
+                    <Typography variant="subtitle1">View Orders</Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Track your order history and status
+                    </Typography>
+                  </Card>
+                </Grid>
+                {(user?.role === 'ADMIN' || user?.role === 'CAFETERIA_MANAGER') && (
+                  <Grid item xs={12} sm={6}>
+                    <Card variant="outlined" sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}>
+                      <Typography variant="subtitle1">Analytics</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        View detailed reports and insights
+                      </Typography>
+                    </Card>
+                  </Grid>
+                )}
+                {(user?.role === 'VENDOR' || user?.role === 'ADMIN' || user?.role === 'CAFETERIA_MANAGER') && (
+                  <Grid item xs={12} sm={6}>
+                    <Card variant="outlined" sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}>
+                      <Typography variant="subtitle1">Vendor Portal</Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Manage your menu and orders
+                      </Typography>
+                    </Card>
+                  </Grid>
+                )}
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* User Info */}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Your Account
+              </Typography>
+              {user && (
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+                      {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="subtitle1">
+                        {user.firstName} {user.lastName}
+                      </Typography>
+                      <Chip
+                        label={user.role.replace('_', ' ')}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                  </Box>
+                  <Typography variant="body2" color="textSecondary" gutterBottom>
+                    Email: {user.email}
+                  </Typography>
+                  {user.department && (
+                    <Typography variant="body2" color="textSecondary" gutterBottom>
+                      Department: {user.department}
+                    </Typography>
+                  )}
+                  {user.foodCardBalance !== undefined && (
+                    <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                      <Typography variant="subtitle2">Food Card Balance</Typography>
+                      <Typography variant="h6" color="primary">
+                        ₹{user.foodCardBalance.toFixed(2)}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
               )}
-            </Box>
-          </Paper>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </Box>

@@ -3,22 +3,17 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface OrderItem {
   id: string;
   menuItemId: string;
-  menuItemName: string;
+  name: string;
   quantity: number;
   price: number;
-  specialInstructions?: string;
 }
 
 export interface Order {
   id: string;
-  userId: string;
   items: OrderItem[];
-  status: 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
-  totalAmount: number;
-  pickupTime?: string;
-  orderTime: string;
-  vendorId: string;
-  paymentStatus: 'PENDING' | 'PAID' | 'REFUNDED';
+  total: number;
+  status: 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED';
+  createdAt: string;
 }
 
 export interface OrderState {
@@ -59,8 +54,11 @@ const orderSlice = createSlice({
     clearCart: (state) => {
       state.currentOrder = [];
     },
+    setOrders: (state, action: PayloadAction<Order[]>) => {
+      state.orders = action.payload;
+    },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } = orderSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, clearCart, setOrders } = orderSlice.actions;
 export default orderSlice.reducer; 

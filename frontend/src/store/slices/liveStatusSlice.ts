@@ -1,27 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface CafeteriaStatus {
-  id: string;
-  floorId: string;
-  floorName: string;
-  isOpen: boolean;
-  currentCapacity: number;
-  maxCapacity: number;
-  estimatedWaitTime: number; // in minutes
-  lastUpdated: string;
-  currentMenu: string[];
-  announcements: string[];
-}
-
 export interface LiveStatusState {
-  cafeterias: CafeteriaStatus[];
   isConnected: boolean;
+  activeUsers: number;
+  notifications: string[];
+  isLoading: boolean;
   error: string | null;
 }
 
 const initialState: LiveStatusState = {
-  cafeterias: [],
   isConnected: false,
+  activeUsers: 0,
+  notifications: [],
+  isLoading: false,
   error: null,
 };
 
@@ -29,19 +20,20 @@ const liveStatusSlice = createSlice({
   name: 'liveStatus',
   initialState,
   reducers: {
-    setConnectionStatus: (state, action: PayloadAction<boolean>) => {
+    setConnected: (state, action: PayloadAction<boolean>) => {
       state.isConnected = action.payload;
     },
-    updateCafeteriaStatus: (state, action: PayloadAction<CafeteriaStatus>) => {
-      const index = state.cafeterias.findIndex(c => c.id === action.payload.id);
-      if (index !== -1) {
-        state.cafeterias[index] = action.payload;
-      } else {
-        state.cafeterias.push(action.payload);
-      }
+    setActiveUsers: (state, action: PayloadAction<number>) => {
+      state.activeUsers = action.payload;
     },
-    setCafeteriaStatuses: (state, action: PayloadAction<CafeteriaStatus[]>) => {
-      state.cafeterias = action.payload;
+    addNotification: (state, action: PayloadAction<string>) => {
+      state.notifications.push(action.payload);
+    },
+    clearNotifications: (state) => {
+      state.notifications = [];
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
@@ -50,9 +42,11 @@ const liveStatusSlice = createSlice({
 });
 
 export const {
-  setConnectionStatus,
-  updateCafeteriaStatus,
-  setCafeteriaStatuses,
+  setConnected,
+  setActiveUsers,
+  addNotification,
+  clearNotifications,
+  setLoading,
   setError,
 } = liveStatusSlice.actions;
 

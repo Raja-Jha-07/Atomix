@@ -6,10 +6,15 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'EMPLOYEE' | 'VENDOR' | 'ADMIN';
+  role: 'EMPLOYEE' | 'VENDOR' | 'ADMIN' | 'CAFETERIA_MANAGER';
   floorId?: string;
   department?: string;
   profileImage?: string;
+  employeeId?: string;
+  phoneNumber?: string;
+  foodCardBalance?: number;
+  isActive?: boolean;
+  emailVerified?: boolean;
 }
 
 export interface AuthState {

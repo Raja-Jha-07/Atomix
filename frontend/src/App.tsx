@@ -8,8 +8,11 @@ import MenuPage from './pages/MenuPage';
 import OrdersPage from './pages/OrdersPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import VendorPortal from './pages/VendorPortal';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAppSelector } from './hooks/redux';
 
@@ -19,13 +22,14 @@ const App: React.FC = () => {
   return (
     <Box className="app-container">
       {isAuthenticated && <Navbar />}
-      <Box className="main-content">
+      <Box className="main-content" sx={{ display: 'flex', minHeight: '100vh' }}>
         {isAuthenticated && <Sidebar />}
-        <Box component="main" sx={{ flex: 1, p: 2, overflow: 'auto' }}>
+        <Box component="main" sx={{ flex: 1, p: isAuthenticated ? 2 : 0, overflow: 'auto' }}>
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
             
             {/* Protected routes */}
             <Route path="/" element={
@@ -44,13 +48,23 @@ const App: React.FC = () => {
               </ProtectedRoute>
             } />
             <Route path="/analytics" element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole={['ADMIN', 'CAFETERIA_MANAGER']}>
                 <AnalyticsPage />
               </ProtectedRoute>
             } />
             <Route path="/vendor" element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole={['VENDOR', 'CAFETERIA_MANAGER', 'ADMIN']}>
                 <VendorPortal />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             } />
             

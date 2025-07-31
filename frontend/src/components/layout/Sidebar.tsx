@@ -6,9 +6,9 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Divider,
-  Toolbar,
   Box,
+  Typography,
+  Divider,
 } from '@mui/material';
 import {
   Dashboard,
@@ -16,35 +16,62 @@ import {
   ShoppingCart,
   Analytics,
   Store,
+  Person,
   Settings,
-  LiveTv,
-  MusicNote,
-  Inventory,
-  Feedback,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
 
 const drawerWidth = 240;
 
-interface MenuItemProps {
+interface NavigationItem {
   text: string;
   icon: React.ReactElement;
   path: string;
-  roles?: string[];
+  requiredRoles?: string[];
 }
 
-const menuItems: MenuItemProps[] = [
-  { text: 'Dashboard', icon: <Dashboard />, path: '/' },
-  { text: 'Menu', icon: <Restaurant />, path: '/menu' },
-  { text: 'Orders', icon: <ShoppingCart />, path: '/orders' },
-  { text: 'Live Status', icon: <LiveTv />, path: '/live-status' },
-  { text: 'Analytics', icon: <Analytics />, path: '/analytics', roles: ['ADMIN', 'CAFETERIA_MANAGER'] },
-  { text: 'Vendor Portal', icon: <Store />, path: '/vendor', roles: ['VENDOR', 'ADMIN'] },
-  { text: 'Music Control', icon: <MusicNote />, path: '/music', roles: ['ADMIN', 'CAFETERIA_MANAGER'] },
-  { text: 'Inventory', icon: <Inventory />, path: '/inventory', roles: ['VENDOR', 'ADMIN'] },
-  { text: 'Feedback', icon: <Feedback />, path: '/feedback' },
-  { text: 'Settings', icon: <Settings />, path: '/settings' },
+const navigationItems: NavigationItem[] = [
+  {
+    text: 'Dashboard',
+    icon: <Dashboard />,
+    path: '/',
+  },
+  {
+    text: 'Menu',
+    icon: <Restaurant />,
+    path: '/menu',
+  },
+  {
+    text: 'Orders',
+    icon: <ShoppingCart />,
+    path: '/orders',
+  },
+  {
+    text: 'Analytics',
+    icon: <Analytics />,
+    path: '/analytics',
+    requiredRoles: ['ADMIN', 'CAFETERIA_MANAGER'],
+  },
+  {
+    text: 'Vendor Portal',
+    icon: <Store />,
+    path: '/vendor',
+    requiredRoles: ['VENDOR', 'CAFETERIA_MANAGER', 'ADMIN'],
+  },
+];
+
+const userItems: NavigationItem[] = [
+  {
+    text: 'Profile',
+    icon: <Person />,
+    path: '/profile',
+  },
+  {
+    text: 'Settings',
+    icon: <Settings />,
+    path: '/settings',
+  },
 ];
 
 const Sidebar: React.FC = () => {
@@ -52,10 +79,17 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const { user } = useAppSelector((state) => state.auth);
 
-  const filteredMenuItems = menuItems.filter(item => {
-    if (!item.roles) return true;
-    return user && item.roles.includes(user.role);
-  });
+  const hasRequiredRole = (requiredRoles?: string[]) => {
+    if (!requiredRoles || !user) return true;
+    return requiredRoles.includes(user.role);
+  };
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -70,45 +104,50 @@ const Sidebar: React.FC = () => {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
+          position: 'static',
+          height: '100%',
         },
       }}
     >
-      <Toolbar />
-      <Box sx={{ overflow: 'auto' }}>
-        <List>
-          {filteredMenuItems.slice(0, 4).map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                selected={location.pathname === item.path}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <ListItemIcon>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        
-        <Divider />
-        
-        <List>
-          {filteredMenuItems.slice(4).map((item) => (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                selected={location.pathname === item.path}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <ListItemIcon>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+      <Box sx={{ p: 2 }}>
+        <Typography variant="h6" noWrap component="div">
+          Navigation
+        </Typography>
       </Box>
+      
+      <Divider />
+      
+      <List>
+        {navigationItems
+          .filter(item => hasRequiredRole(item.requiredRoles))
+          .map((item) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                selected={isActive(item.path)}
+                onClick={() => handleNavigation(item.path)}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+      </List>
+      
+      <Divider sx={{ mt: 'auto' }} />
+      
+      <List>
+        {userItems.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              selected={isActive(item.path)}
+              onClick={() => handleNavigation(item.path)}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
     </Drawer>
   );
 };
