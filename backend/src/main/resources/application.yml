@@ -2,39 +2,43 @@ spring:
   application:
     name: atomix-cafeteria
   
-  # MySQL Configuration
+  # PostgreSQL Configuration (Neon DB)
   datasource:
-    url: jdbc:mysql://localhost:3306/atomix_cafeteria?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:atomix_user}
-    password: ${DB_PASSWORD:atomix_password}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DATABASE_URL=psql 'postgresql://neondb_owner:npg_T29FfNVGnBcQ@ep-rapid-math-a1ehc2en-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_T29FfNVGnBcQ}
+    driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
+      maximum-pool-size: 10  # Reduced for free tier limits
+      minimum-idle: 2
       connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
+      idle-timeout: 300000   # Reduced for free tier
+      max-lifetime: 1200000  # Reduced for free tier
+      leak-detection-threshold: 60000
   
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: false
+      ddl-auto: none  # Temporarily disabled for testing
+    show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         use_sql_comments: true
         jdbc:
           batch_size: 25
         order_inserts: true
         order_updates: true
+        # PostgreSQL specific optimizations
+        temp:
+          use_jdbc_metadata_defaults: false
   
-  # MongoDB Configuration
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/atomix_cafeteria_nosql
-      auto-index-creation: true
+  # MongoDB Configuration (temporarily disabled for testing)
+  # data:
+  #   mongodb:
+  #     uri: mongodb://localhost:27017/atomix_cafeteria_nosql
+  #     auto-index-creation: true
   
   # Flyway Configuration
   flyway:
@@ -76,7 +80,7 @@ spring:
 
 # Server Configuration
 server:
-  port: 8080
+  port: 8081
   servlet:
     context-path: /api/v1
   compression:
