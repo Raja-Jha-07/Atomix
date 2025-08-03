@@ -62,18 +62,23 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()  // Also allow v1 auth paths
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()  // H2 Console
                 .requestMatchers("/test/**").permitAll()  // Test endpoints
+                .requestMatchers("/api/v1/test/**").permitAll()  // API v1 test endpoints
+                .requestMatchers("/api/v1/health").permitAll()  // Health check
                 
                 // Admin only endpoints
                 .requestMatchers("/users/statistics").hasAnyRole("ADMIN", "CAFETERIA_MANAGER")
                 .requestMatchers("/analytics/**").hasAnyRole("ADMIN", "CAFETERIA_MANAGER")
+                .requestMatchers("/api/vendors/statistics").hasAnyRole("ADMIN", "CAFETERIA_MANAGER")
                 
-                // Vendor endpoints
-                .requestMatchers("/vendor/**").hasAnyRole("VENDOR", "ADMIN")
+                // Vendor endpoints - allow both paths
+                .requestMatchers("/vendor/**").hasAnyRole("VENDOR", "ADMIN", "CAFETERIA_MANAGER")
+                .requestMatchers("/api/vendors/**").hasAnyRole("VENDOR", "ADMIN", "CAFETERIA_MANAGER", "EMPLOYEE")
                 
                 // All other requests need authentication
                 .anyRequest().authenticated()
@@ -87,10 +92,38 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        
+        // Allow specific origins
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000", 
+            "http://127.0.0.1:3000", 
+            "http://localhost:3001"
+        ));
+        
+        // Allow all HTTP methods
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
+        ));
+        
+        // Allow all headers
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Allow credentials
         configuration.setAllowCredentials(true);
+        
+        // Expose headers
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization", 
+            "Content-Type", 
+            "X-Requested-With", 
+            "accept", 
+            "Origin", 
+            "Access-Control-Request-Method", 
+            "Access-Control-Request-Headers"
+        ));
+        
+        // Max age for preflight requests
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
