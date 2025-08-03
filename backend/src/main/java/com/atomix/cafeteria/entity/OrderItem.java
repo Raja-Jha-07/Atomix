@@ -30,7 +30,7 @@ public class OrderItem {
     
     @NotNull
     @PositiveOrZero
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private BigDecimal price; // Price at the time of order
     
     @Column(name = "special_instructions", columnDefinition = "TEXT")

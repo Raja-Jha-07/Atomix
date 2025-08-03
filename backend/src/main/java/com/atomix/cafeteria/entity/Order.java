@@ -42,15 +42,15 @@ public class Order {
     
     @NotNull
     @PositiveOrZero
-    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
+    @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
     
     @PositiveOrZero
-    @Column(name = "discount_amount", precision = 10, scale = 2)
+        @Column(name = "discount_amount")
     private BigDecimal discountAmount = BigDecimal.ZERO;
-    
+
     @PositiveOrZero
-    @Column(name = "tax_amount", precision = 10, scale = 2)
+    @Column(name = "tax_amount")
     private BigDecimal taxAmount = BigDecimal.ZERO;
     
     @Column(name = "pickup_time")

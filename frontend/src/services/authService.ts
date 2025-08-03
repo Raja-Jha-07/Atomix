@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { User } from '../store/slices/authSlice';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
-const USE_MOCK_AUTH = true; // Set to false when backend is ready
+const API_BASE_URL = 'http://localhost:8083/api/v1';
+const USE_MOCK_AUTH = false; // Set to false when backend is ready
 
 // Mock users for testing without backend
 const mockUsers = {
