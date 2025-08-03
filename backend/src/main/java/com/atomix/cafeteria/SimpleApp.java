@@ -4,38 +4,27 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 @SpringBootApplication(exclude = {
     MongoDataAutoConfiguration.class,
-    MongoAutoConfiguration.class
+    MongoAutoConfiguration.class,
+    SecurityAutoConfiguration.class
 })
-@EnableJpaRepositories(basePackages = "com.atomix.cafeteria.repository")
 @RestController
 @CrossOrigin(origins = "*")
-public class CafeteriaApplication {
+public class SimpleApp {
 
     public static void main(String[] args) {
-        // Set system properties for Java 24 compatibility
-        System.setProperty("java.awt.headless", "true");
-        System.setProperty("spring.main.lazy-initialization", "true");
-        
-        SpringApplication app = new SpringApplication(CafeteriaApplication.class);
-        app.setLogStartupInfo(true);
-        app.run(args);
-    }
-    
-    @GetMapping("/api/v1/test")
-    public String test() {
-        return "🎉 Atomix Backend is running with Java 24! Port: 8081";
+        SpringApplication.run(SimpleApp.class, args);
     }
     
     @GetMapping("/api/v1/health")
     public String health() {
-        return "✅ OK - Java " + System.getProperty("java.version");
+        return "✅ Simple Backend is running! Java " + System.getProperty("java.version");
     }
     
     @GetMapping("/api/v1/info")

@@ -75,7 +75,7 @@ public class Vendor {
     private LocalDateTime temporaryEndDate;
     
     // Rating and reviews
-    @Column(name = "average_rating", precision = 3, scale = 2)
+    @Column(name = "average_rating")
     private Double averageRating = 0.0;
     
     @Column(name = "total_reviews")

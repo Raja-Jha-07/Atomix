@@ -32,7 +32,7 @@ public class MenuItem {
     
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private BigDecimal price;
     
     @Enumerated(EnumType.STRING)
@@ -89,7 +89,7 @@ public class MenuItem {
     private Integer votesCount = 0;
     
     @DecimalMin(value = "0.0")
-    @Column(precision = 3, scale = 2)
+    @Column
     private BigDecimal rating = BigDecimal.ZERO;
     
     @PositiveOrZero

@@ -2,12 +2,12 @@ spring:
   application:
     name: atomix-cafeteria
   
-  # PostgreSQL Configuration (Neon DB)
+  # H2 Database Configuration (In-Memory for Development)
   datasource:
-    url: jdbc:postgresql://ep-rapid-math-a1ehc2en-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-    username: neondb_owner
-    password: npg_T29FfNVGnBcQ
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:h2:mem:atomix_db
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
     hikari:
       maximum-pool-size: 10  # Reduced for free tier limits
       minimum-idle: 2
@@ -16,14 +16,20 @@ spring:
       max-lifetime: 1200000  # Reduced for free tier
       leak-detection-threshold: 60000
   
+  # H2 Console Configuration
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate  # Validate schema matches entities
+      ddl-auto: create-drop  # Auto-create schema for H2
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
         use_sql_comments: true
         jdbc:
@@ -40,26 +46,26 @@ spring:
   #     uri: mongodb://localhost:27017/atomix_cafeteria_nosql
   #     auto-index-creation: true
   
-  # Flyway Configuration
+  # Flyway Configuration - Disabled for H2 (using create-drop)
   flyway:
-    enabled: true
+    enabled: false
     baseline-on-migrate: true
     locations: classpath:db/migration
     baseline-version: 1
   
-  # Security Configuration
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:}
-            client-secret: ${GOOGLE_CLIENT_SECRET:}
-            scope: profile, email
-          github:
-            client-id: ${GITHUB_CLIENT_ID:}
-            client-secret: ${GITHUB_CLIENT_SECRET:}
-            scope: user:email
+  # Security Configuration (OAuth2 disabled for now)
+  # security:
+  #   oauth2:
+  #     client:
+  #       registration:
+  #         google:
+  #           client-id: ${GOOGLE_CLIENT_ID:}
+  #           client-secret: ${GOOGLE_CLIENT_SECRET:}
+  #           scope: profile, email
+  #         github:
+  #           client-id: ${GITHUB_CLIENT_ID:}
+  #           client-secret: ${GITHUB_CLIENT_SECRET:}
+  #           scope: user:email
   
   # Mail Configuration
   mail:

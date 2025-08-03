@@ -39,10 +39,7 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
+
         
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -109,17 +106,7 @@
             <version>2.2.0</version>
         </dependency>
         
-        <!-- Flyway for database migrations -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-            <version>10.8.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
-            <version>10.8.1</version>
-        </dependency>
+
         
         <!-- Model Mapper -->
         <dependency>
@@ -191,7 +178,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.atomix.cafeteria.CafeteriaApplication</mainClass>
+                    <mainClass>com.atomix.simple.SimpleApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.springframework.boot</groupId>
