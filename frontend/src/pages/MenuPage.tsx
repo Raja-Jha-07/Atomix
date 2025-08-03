@@ -54,7 +54,7 @@ import {
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { useNavigate } from 'react-router-dom';
 import { updateUser } from '../store/slices/authSlice';
-import paymentService from '../services/paymentService';
+import { paymentService } from '../services/paymentService';
 import orderService from '../services/orderService';
 
 interface MenuItem {
@@ -297,58 +297,88 @@ const MenuPage: React.FC = () => {
     setIsProcessingPayment(true);
 
     try {
-      const result = await paymentService.payForOrder(
-        getTotalPrice(),
-        {
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          contact: user.phoneNumber,
-        }
-      );
+      const result = await paymentService.createPayment({
+        amount: getTotalPrice(),
+        paymentMethod: 'RAZORPAY',
+        paymentType: 'ORDER_PAYMENT',
+        description: `Order payment for ${cartItems.length} items`
+      });
 
-      if (result.success) {
-        // Create order using order service
-        const orderData = {
-          items: cartItems.map(item => ({
-            menuItemId: item.id,
-            name: item.name,
-            price: item.discount ? (item.price * (100 - item.discount) / 100) : item.price,
-            quantity: item.quantity,
-            vendor: item.vendor
-          })),
-          totalAmount: getTotalPrice(),
-          paymentMethod: 'RAZORPAY' as const,
-          paymentStatus: 'COMPLETED' as const,
-          razorpayPaymentId: result.paymentId,
-          razorpayOrderId: result.orderId
-        };
-
-        const orderResult = await orderService.createOrder(orderData);
-
-        if (orderResult.success) {
-          // Clear cart and show success
-          setCartItems([]);
-          setShowCart(false);
-          setOrderSuccess(true);
-          setAlertMessage('Order placed successfully! Payment completed.');
-          setAlertSeverity('success');
-
-          // Navigate to orders page after 2 seconds
-          setTimeout(() => {
-            navigate('/orders');
-          }, 2000);
+      if (result.paymentStatus === 'COMPLETED') {
+        // Payment was successful (Food Card payment)
+        await handleSuccessfulPayment(result);
+      } else if (result.paymentStatus === 'PENDING') {
+        // Handle Razorpay payment flow
+        if (result.razorpayKeyId && result.gatewayOrderId) {
+          await paymentService.processRazorpayPayment(
+            result,
+            async (verifiedPayment) => {
+              await handleSuccessfulPayment(verifiedPayment);
+            },
+            (error) => {
+              setAlertMessage(error.message || 'Payment verification failed');
+              setAlertSeverity('error');
+              setIsProcessingPayment(false);
+            }
+          );
         } else {
-          setAlertMessage(orderResult.error || 'Failed to create order');
+          setAlertMessage('Payment initialization failed');
           setAlertSeverity('error');
+          setIsProcessingPayment(false);
         }
-
       } else {
-        setAlertMessage(result.error || 'Payment failed');
+        setAlertMessage(result.failureReason || 'Payment failed');
         setAlertSeverity('error');
+        setIsProcessingPayment(false);
       }
     } catch (error) {
       console.error('External payment error:', error);
       setAlertMessage('An error occurred during payment. Please try again.');
+      setAlertSeverity('error');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleSuccessfulPayment = async (paymentResult: any) => {
+    try {
+      // Create order using order service
+      const orderData = {
+        items: cartItems.map(item => ({
+          menuItemId: item.id,
+          name: item.name,
+          price: item.discount ? (item.price * (100 - item.discount) / 100) : item.price,
+          quantity: item.quantity,
+          vendor: item.vendor
+        })),
+        totalAmount: getTotalPrice(),
+        paymentMethod: 'RAZORPAY' as const,
+        paymentStatus: 'COMPLETED' as const,
+        razorpayPaymentId: paymentResult.gatewayPaymentId || paymentResult.paymentId,
+        razorpayOrderId: paymentResult.gatewayOrderId || paymentResult.paymentId
+      };
+
+      const orderResult = await orderService.createOrder(orderData);
+
+      if (orderResult.success) {
+        // Clear cart and show success
+        setCartItems([]);
+        setShowCart(false);
+        setOrderSuccess(true);
+        setAlertMessage('Order placed successfully! Payment completed.');
+        setAlertSeverity('success');
+
+        // Navigate to orders page after 2 seconds
+        setTimeout(() => {
+          navigate('/orders');
+        }, 2000);
+      } else {
+        setAlertMessage(orderResult.error || 'Failed to create order');
+        setAlertSeverity('error');
+      }
+    } catch (error) {
+      console.error('Order creation error:', error);
+      setAlertMessage('Payment successful but failed to create order. Please contact support.');
       setAlertSeverity('error');
     } finally {
       setIsProcessingPayment(false);

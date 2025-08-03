@@ -21,12 +21,11 @@ export interface PaymentType {
 }
 
 export interface PaymentStatus {
+  CREATED: 'CREATED';
   PENDING: 'PENDING';
-  PROCESSING: 'PROCESSING';
-  PAID: 'PAID';
+  COMPLETED: 'COMPLETED';
   FAILED: 'FAILED';
-  REFUNDED: 'REFUNDED';
-  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED';
+  CANCELLED: 'CANCELLED';
 }
 
 export interface PaymentRequest {

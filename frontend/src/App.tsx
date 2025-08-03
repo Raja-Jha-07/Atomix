@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, ThemeProvider, CssBaseline } from '@mui/material';
+import { theme } from './theme/theme';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -11,7 +12,6 @@ import VendorPortal from './pages/VendorPortal';
 import CafeteriaManagerDashboard from './pages/CafeteriaManagerDashboard';
 import PaymentPage from './pages/PaymentPage';
 import ProfilePage from './pages/ProfilePage';
-import PaymentPage from './pages/PaymentPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -40,82 +40,116 @@ const App: React.FC = () => {
   };
 
   return (
-    <Box className="app-container">
-      {isAuthenticated && <Navbar />}
-      <Box className="main-content" sx={{ display: 'flex', minHeight: '100vh' }}>
-        {isAuthenticated && <Sidebar />}
-        <Box component="main" sx={{ flex: 1, p: isAuthenticated ? 2 : 0, overflow: 'auto' }}>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/unauthorized" element={<UnauthorizedPage />} />
-            
-            {/* Role-based default route */}
-            <Route path="/" element={
-              isAuthenticated ? 
-                <Navigate to={getRoleBasedRoute()} replace /> : 
-                <Navigate to="/login" replace />
-            } />
-            
-            {/* Protected routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/manager-dashboard" element={
-              <ProtectedRoute allowedRoles={['CAFETERIA_MANAGER']}>
-                <CafeteriaManagerDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/vendor-portal" element={
-              <ProtectedRoute allowedRoles={['VENDOR']}>
-                <VendorPortal />
-              </ProtectedRoute>
-            } />
-            <Route path="/menu" element={
-              <ProtectedRoute>
-                <MenuPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/orders" element={
-              <ProtectedRoute>
-                <OrdersPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/payment" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER']}>
-                <PaymentPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/analytics" element={
-              <ProtectedRoute>
-                <AnalyticsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            } />
-            <Route path="/payments" element={
-              <ProtectedRoute>
-                <PaymentPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
-
-            {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box 
+        className="app-container" 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        }}
+      >
+        {isAuthenticated && <Navbar />}
+        <Box 
+          className="main-content" 
+          sx={{ 
+            display: 'flex', 
+            flex: 1,
+            overflow: 'hidden'
+          }}
+        >
+          {isAuthenticated && <Sidebar />}
+          <Box 
+            component="main" 
+            sx={{ 
+              flex: 1, 
+              p: isAuthenticated ? 3 : 0, 
+              overflow: 'auto',
+              background: isAuthenticated ? 'transparent' : 'inherit'
+            }}
+          >
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Protected routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/manager-dashboard" element={
+                <ProtectedRoute allowedRoles={['CAFETERIA_MANAGER']}>
+                  <CafeteriaManagerDashboard />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/vendor-portal" element={
+                <ProtectedRoute allowedRoles={['VENDOR']}>
+                  <VendorPortal />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/menu" element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER']}>
+                  <MenuPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/orders" element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'VENDOR', 'CAFETERIA_MANAGER']}>
+                  <OrdersPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/analytics" element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'CAFETERIA_MANAGER']}>
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/payments" element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER']}>
+                  <PaymentPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/profile" element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'VENDOR', 'CAFETERIA_MANAGER']}>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/settings" element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <SettingsPage />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/unauthorized" element={<UnauthorizedPage />} />
+              
+              {/* Redirect based on authentication and role */}
+              <Route path="/" element={
+                isAuthenticated ? 
+                  <Navigate to={getRoleBasedRoute()} replace /> : 
+                  <Navigate to="/login" replace />
+              } />
+              
+              {/* Catch all route */}
+              <Route path="*" element={
+                isAuthenticated ? 
+                  <Navigate to={getRoleBasedRoute()} replace /> : 
+                  <Navigate to="/login" replace />
+              } />
+            </Routes>
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </ThemeProvider>
   );
 };
 
