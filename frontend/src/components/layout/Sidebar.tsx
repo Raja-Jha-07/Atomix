@@ -18,6 +18,9 @@ import {
   Store,
   Person,
   Settings,
+  SupervisorAccount,
+  BusinessCenter,
+  Payment,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
@@ -35,29 +38,44 @@ const navigationItems: NavigationItem[] = [
   {
     text: 'Dashboard',
     icon: <Dashboard />,
-    path: '/',
+    path: '/dashboard',
+    requiredRoles: ['ADMIN', 'EMPLOYEE'],
+  },
+  {
+    text: 'Manager Dashboard',
+    icon: <SupervisorAccount />,
+    path: '/manager-dashboard',
+    requiredRoles: ['CAFETERIA_MANAGER'],
+  },
+  {
+    text: 'Vendor Portal',
+    icon: <Store />,
+    path: '/vendor-portal',
+    requiredRoles: ['VENDOR'],
   },
   {
     text: 'Menu',
     icon: <Restaurant />,
     path: '/menu',
+    requiredRoles: ['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER'],
   },
   {
     text: 'Orders',
     icon: <ShoppingCart />,
     path: '/orders',
+    requiredRoles: ['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER'],
+  },
+  {
+    text: 'Payment',
+    icon: <Payment />,
+    path: '/payment',
+    requiredRoles: ['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER'],
   },
   {
     text: 'Analytics',
     icon: <Analytics />,
     path: '/analytics',
-    requiredRoles: ['ADMIN', 'CAFETERIA_MANAGER'],
-  },
-  {
-    text: 'Vendor Portal',
-    icon: <Store />,
-    path: '/vendor',
-    requiredRoles: ['VENDOR', 'CAFETERIA_MANAGER', 'ADMIN'],
+    requiredRoles: ['ADMIN', 'CAFETERIA_MANAGER', 'EMPLOYEE'],
   },
 ];
 
@@ -85,8 +103,9 @@ const Sidebar: React.FC = () => {
   };
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
+    // For exact matches on dashboard pages
+    if (path === '/dashboard' || path === '/manager-dashboard' || path === '/vendor-portal') {
+      return location.pathname === path;
     }
     return location.pathname.startsWith(path);
   };

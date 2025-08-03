@@ -1,47 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
+  Typography,
   Grid,
   Card,
   CardContent,
   CardMedia,
-  Typography,
-  Button,
   Chip,
+  Button,
   TextField,
-  InputAdornment,
-  Tabs,
-  Tab,
-  Rating,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   IconButton,
-  Badge,
   Drawer,
   List,
   ListItem,
   ListItemText,
-  Divider,
   Avatar,
-  Paper,
-  Stack,
+  Divider,
   Fab,
+  Badge,
+  Stack,
+  Rating,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+  AlertTitle,
+  Snackbar,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from '@mui/material';
 import {
   Search,
   FilterList,
-  Favorite,
-  FavoriteBorder,
   Add,
   Remove,
   ShoppingCart,
+  Restaurant,
+  AccessTime,
+  Star,
   LocalOffer,
   Circle,
-  Restaurant,
-  Timer,
-  Star,
+  AccountBalanceWallet,
+  CreditCard,
+  CheckCircle,
 } from '@mui/icons-material';
-import { useAppSelector } from '../hooks/redux';
+import { useAppSelector, useAppDispatch } from '../hooks/redux';
+import { useNavigate } from 'react-router-dom';
+import { updateUser } from '../store/slices/authSlice';
 import paymentService from '../services/paymentService';
+import orderService from '../services/orderService';
 
 interface MenuItem {
   id: number;
@@ -52,11 +66,10 @@ interface MenuItem {
   category: string;
   vendor: string;
   rating: number;
-  reviews: number;
+  prepTime: number;
   isVegetarian: boolean;
-  preparationTime: number;
-  tags: string[];
   isAvailable: boolean;
+  tags: string[];
   discount?: number;
 }
 
@@ -66,124 +79,102 @@ interface CartItem extends MenuItem {
 
 const MenuPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedVendor, setSelectedVendor] = useState('All');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([1, 3, 5]); // Mock favorites
   const [showCart, setShowCart] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'food_card' | 'external'>('food_card');
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertSeverity, setAlertSeverity] = useState<'success' | 'error' | 'warning'>('success');
 
-  // Mock menu data
+  // Mock menu items data
   const menuItems: MenuItem[] = [
     {
       id: 1,
-      name: 'Veg Thali',
-      description: 'Complete vegetarian meal with dal, rice, roti, vegetables, and dessert',
-      price: 120,
+      name: 'Butter Chicken',
+      description: 'Creamy tomato-based curry with tender chicken pieces, served with basmati rice',
+      price: 180,
       image: '/api/placeholder/300/200',
-      category: 'North Indian',
+      category: 'Main Course',
       vendor: 'North Indian Corner',
       rating: 4.5,
-      reviews: 124,
-      isVegetarian: true,
-      preparationTime: 15,
-      tags: ['Popular', 'Healthy'],
+      prepTime: 15,
+      isVegetarian: false,
       isAvailable: true,
-      discount: 10,
+      tags: ['Spicy', 'Popular', 'Protein Rich'],
+      discount: 10
     },
     {
       id: 2,
-      name: 'Chicken Biryani',
-      description: 'Aromatic basmati rice with tender chicken pieces and fragrant spices',
-      price: 180,
-      image: '/api/placeholder/300/200',
-      category: 'North Indian',
-      vendor: 'North Indian Corner',
-      rating: 4.7,
-      reviews: 89,
-      isVegetarian: false,
-      preparationTime: 25,
-      tags: ['Spicy', 'Popular'],
-      isAvailable: true,
-    },
-    {
-      id: 3,
       name: 'Masala Dosa',
-      description: 'Crispy crepe filled with spiced potato stuffing, served with chutney',
+      description: 'Crispy rice and lentil crepe filled with spiced potato curry, served with chutneys',
       price: 80,
       image: '/api/placeholder/300/200',
       category: 'South Indian',
       vendor: 'South Indian Express',
-      rating: 4.3,
-      reviews: 156,
+      rating: 4.7,
+      prepTime: 10,
       isVegetarian: true,
-      preparationTime: 12,
-      tags: ['Crispy', 'Traditional'],
       isAvailable: true,
+      tags: ['Crispy', 'Traditional', 'Light'],
+    },
+    {
+      id: 3,
+      name: 'Paneer Tikka',
+      description: 'Grilled cottage cheese marinated in aromatic spices and yogurt',
+      price: 150,
+      image: '/api/placeholder/300/200',
+      category: 'Appetizers',
+      vendor: 'Grill Master',
+      rating: 4.3,
+      prepTime: 12,
+      isVegetarian: true,
+      isAvailable: true,
+      tags: ['Grilled', 'Healthy', 'Protein Rich'],
     },
     {
       id: 4,
-      name: 'Paneer Roll',
-      description: 'Soft roll filled with spiced paneer, onions, and tangy sauces',
-      price: 90,
+      name: 'Biryani',
+      description: 'Aromatic basmati rice cooked with tender meat and exotic spices',
+      price: 200,
       image: '/api/placeholder/300/200',
-      category: 'Street Food',
-      vendor: 'Street Food Hub',
-      rating: 4.1,
-      reviews: 67,
-      isVegetarian: true,
-      preparationTime: 8,
-      tags: ['Quick', 'Spicy'],
-      isAvailable: true,
-    },
-    {
-      id: 5,
-      name: 'Filter Coffee',
-      description: 'Authentic South Indian filter coffee with perfect milk-to-coffee ratio',
-      price: 25,
-      image: '/api/placeholder/300/200',
-      category: 'Beverages',
-      vendor: 'Beverages Corner',
-      rating: 4.6,
-      reviews: 203,
-      isVegetarian: true,
-      preparationTime: 3,
-      tags: ['Hot', 'Energizing'],
-      isAvailable: true,
-    },
-    {
-      id: 6,
-      name: 'Pasta Alfredo',
-      description: 'Creamy pasta with white sauce, mushrooms, and herbs',
-      price: 150,
-      image: '/api/placeholder/300/200',
-      category: 'Continental',
-      vendor: 'Continental Corner',
-      rating: 4.2,
-      reviews: 45,
-      isVegetarian: true,
-      preparationTime: 18,
-      tags: ['Creamy', 'Italian'],
+      category: 'Main Course',
+      vendor: 'Biryani House',
+      rating: 4.8,
+      prepTime: 20,
+      isVegetarian: false,
       isAvailable: false,
+      tags: ['Fragrant', 'Traditional', 'Heavy'],
     },
   ];
 
-  const categories = ['All', 'North Indian', 'South Indian', 'Street Food', 'Beverages', 'Continental'];
+  const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))];
+  const vendors = ['All', ...Array.from(new Set(menuItems.map(item => item.vendor)))];
 
-  const filteredItems = menuItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.vendor.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredItems = useMemo(() => {
+    return menuItems.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+      const matchesVendor = selectedVendor === 'All' || item.vendor === selectedVendor;
+      
+      return matchesSearch && matchesCategory && matchesVendor;
+    });
+  }, [searchTerm, selectedCategory, selectedVendor]);
 
   const addToCart = (item: MenuItem) => {
     setCartItems(prev => {
       const existingItem = prev.find(cartItem => cartItem.id === item.id);
       if (existingItem) {
-        return prev.map(cartItem =>
-          cartItem.id === item.id
+        return prev.map(cartItem => 
+          cartItem.id === item.id 
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         );
@@ -196,8 +187,8 @@ const MenuPage: React.FC = () => {
     setCartItems(prev => {
       const existingItem = prev.find(cartItem => cartItem.id === itemId);
       if (existingItem && existingItem.quantity > 1) {
-        return prev.map(cartItem =>
-          cartItem.id === itemId
+        return prev.map(cartItem => 
+          cartItem.id === itemId 
             ? { ...cartItem, quantity: cartItem.quantity - 1 }
             : cartItem
         );
@@ -206,29 +197,102 @@ const MenuPage: React.FC = () => {
     });
   };
 
-  const toggleFavorite = (itemId: number) => {
-    setFavorites(prev =>
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
-    );
-  };
-
-  const getCartItemQuantity = (itemId: number) => {
+  const getItemQuantity = (itemId: number) => {
     const item = cartItems.find(cartItem => cartItem.id === itemId);
     return item ? item.quantity : 0;
   };
 
   const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => {
+      const price = item.discount ? (item.price * (100 - item.discount) / 100) : item.price;
+      return total + (price * item.quantity);
+    }, 0);
   };
 
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const handleCheckout = async () => {
-    if (cartItems.length === 0 || !user) return;
+  const handlePaymentMethodConfirm = () => {
+    setShowPaymentDialog(false);
+    if (paymentMethod === 'food_card') {
+      handleFoodCardPayment();
+    } else {
+      handleExternalPayment();
+    }
+  };
+
+  const handleFoodCardPayment = async () => {
+    if (!user) return;
+
+    const totalAmount = getTotalPrice();
+    const currentBalance = user.foodCardBalance || 0;
+
+    if (currentBalance < totalAmount) {
+      setAlertMessage(`Insufficient food card balance. Current: ₹${currentBalance}, Required: ₹${totalAmount}`);
+      setAlertSeverity('warning');
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
+    try {
+      // Create order using order service
+      const orderData = {
+        items: cartItems.map(item => ({
+          menuItemId: item.id,
+          name: item.name,
+          price: item.discount ? (item.price * (100 - item.discount) / 100) : item.price,
+          quantity: item.quantity,
+          vendor: item.vendor
+        })),
+        totalAmount,
+        paymentMethod: 'FOOD_CARD' as const,
+        paymentStatus: 'COMPLETED' as const
+      };
+
+      const orderResult = await orderService.createOrder(orderData);
+
+      if (orderResult.success) {
+        // Update food card balance
+        const balanceResult = await orderService.updateFoodCardBalance(totalAmount);
+        
+        if (balanceResult.success && user) {
+          // Update user balance in Redux store
+          dispatch(updateUser({
+            ...user,
+            foodCardBalance: balanceResult.newBalance || (currentBalance - totalAmount)
+          }));
+        }
+
+        // Clear cart and show success
+        setCartItems([]);
+        setShowCart(false);
+        setOrderSuccess(true);
+        setAlertMessage(`Order placed successfully! ₹${totalAmount} deducted from food card.`);
+        setAlertSeverity('success');
+
+        // Navigate to orders page after 2 seconds
+        setTimeout(() => {
+          navigate('/orders');
+        }, 2000);
+
+      } else {
+        setAlertMessage(orderResult.error || 'Failed to create order');
+        setAlertSeverity('error');
+      }
+
+    } catch (error) {
+      console.error('Food card payment error:', error);
+      setAlertMessage('Payment failed. Please try again.');
+      setAlertSeverity('error');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleExternalPayment = async () => {
+    if (!user) return;
 
     setIsProcessingPayment(true);
 
@@ -243,21 +307,62 @@ const MenuPage: React.FC = () => {
       );
 
       if (result.success) {
-        // Clear cart on successful payment
-        setCartItems([]);
-        setShowCart(false);
-        // TODO: Create order record and navigate to order confirmation
-        alert('Order placed successfully!');
+        // Create order using order service
+        const orderData = {
+          items: cartItems.map(item => ({
+            menuItemId: item.id,
+            name: item.name,
+            price: item.discount ? (item.price * (100 - item.discount) / 100) : item.price,
+            quantity: item.quantity,
+            vendor: item.vendor
+          })),
+          totalAmount: getTotalPrice(),
+          paymentMethod: 'RAZORPAY' as const,
+          paymentStatus: 'COMPLETED' as const,
+          razorpayPaymentId: result.paymentId,
+          razorpayOrderId: result.orderId
+        };
+
+        const orderResult = await orderService.createOrder(orderData);
+
+        if (orderResult.success) {
+          // Clear cart and show success
+          setCartItems([]);
+          setShowCart(false);
+          setOrderSuccess(true);
+          setAlertMessage('Order placed successfully! Payment completed.');
+          setAlertSeverity('success');
+
+          // Navigate to orders page after 2 seconds
+          setTimeout(() => {
+            navigate('/orders');
+          }, 2000);
+        } else {
+          setAlertMessage(orderResult.error || 'Failed to create order');
+          setAlertSeverity('error');
+        }
+
       } else {
-        alert(result.error || 'Payment failed');
+        setAlertMessage(result.error || 'Payment failed');
+        setAlertSeverity('error');
       }
     } catch (error) {
-      console.error('Checkout error:', error);
-      alert('An error occurred during checkout. Please try again.');
+      console.error('External payment error:', error);
+      setAlertMessage('An error occurred during payment. Please try again.');
+      setAlertSeverity('error');
     } finally {
       setIsProcessingPayment(false);
     }
   };
+
+  const handleCheckout = () => {
+    if (cartItems.length === 0 || !user) return;
+    setShowPaymentDialog(true);
+  };
+
+  const currentBalance = user?.foodCardBalance || 0;
+  const totalAmount = getTotalPrice();
+  const hasInsufficientBalance = currentBalance < totalAmount;
 
   return (
     <Box sx={{ p: 3 }}>
@@ -268,59 +373,75 @@ const MenuPage: React.FC = () => {
         Fresh meals prepared by our trusted vendors
       </Typography>
 
-      {/* Search and Filter Bar */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              placeholder="Search for dishes, vendors, or ingredients..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Tabs
-              value={selectedCategory}
-              onChange={(_, newValue) => setSelectedCategory(newValue)}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
-              {categories.map((category) => (
-                <Tab key={category} label={category} value={category} />
-              ))}
-            </Tabs>
-          </Grid>
+      {/* Search and Filter Section */}
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={4}>
+          <TextField
+            fullWidth
+            placeholder="Search for dishes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
+            }}
+          />
         </Grid>
-      </Paper>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              startAdornment={<FilterList sx={{ mr: 1, color: 'text.secondary' }} />}
+            >
+              {categories.map(category => (
+                <MenuItem key={category} value={category}>{category}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth>
+            <InputLabel>Vendor</InputLabel>
+            <Select
+              value={selectedVendor}
+              onChange={(e) => setSelectedVendor(e.target.value)}
+            >
+              {vendors.map(vendor => (
+                <MenuItem key={vendor} value={vendor}>{vendor}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+            <Typography variant="body2" color="textSecondary">
+              {filteredItems.length} items found
+            </Typography>
+          </Box>
+        </Grid>
+      </Grid>
 
       {/* Menu Items Grid */}
       <Grid container spacing={3}>
         {filteredItems.map((item) => {
-          const quantity = getCartItemQuantity(item.id);
-          const isFavorite = favorites.includes(item.id);
-
+          const quantity = getItemQuantity(item.id);
+          
           return (
-            <Grid item xs={12} sm={6} md={4} key={item.id}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  opacity: item.isAvailable ? 1 : 0.6,
-                  position: 'relative',
-                }}
-              >
+            <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={item.image}
+                  alt={item.name}
+                  sx={{ position: 'relative' }}
+                />
+                
                 {/* Discount Badge */}
                 {item.discount && (
                   <Chip
+                    icon={<LocalOffer />}
                     label={`${item.discount}% OFF`}
                     color="error"
                     size="small"
@@ -333,69 +454,45 @@ const MenuPage: React.FC = () => {
                   />
                 )}
 
-                {/* Favorite Button */}
-                <IconButton
-                  onClick={() => toggleFavorite(item.id)}
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    bgcolor: 'white',
-                    zIndex: 1,
-                    '&:hover': { bgcolor: 'white' },
-                  }}
-                >
-                  {isFavorite ? (
-                    <Favorite color="error" />
-                  ) : (
-                    <FavoriteBorder />
-                  )}
-                </IconButton>
-
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={item.image}
-                  alt={item.name}
-                  sx={{ bgcolor: 'grey.200' }}
-                />
-
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                      {item.name}
-                    </Typography>
+                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                  {/* Item Name and Vendor */}
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" component="h3" gutterBottom>
+                        {item.name}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary" gutterBottom>
+                        {item.vendor}
+                      </Typography>
+                    </Box>
                     {item.isVegetarian && (
-                      <Circle sx={{ color: 'green', ml: 1, fontSize: 12 }} />
+                      <Circle sx={{ color: 'green', fontSize: 16, ml: 1 }} />
                     )}
                   </Box>
 
-                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                  {/* Description */}
+                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2, flexGrow: 1 }}>
                     {item.description}
                   </Typography>
 
-                  {/* Rating and Reviews */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Rating value={item.rating} precision={0.1} size="small" readOnly />
-                    <Typography variant="body2" color="textSecondary" sx={{ ml: 1 }}>
-                      {item.rating} ({item.reviews} reviews)
-                    </Typography>
-                  </Box>
-
-                  {/* Vendor and Preparation Time */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Restaurant sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="textSecondary" sx={{ mr: 2 }}>
-                      {item.vendor}
-                    </Typography>
-                    <Timer sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
-                    <Typography variant="body2" color="textSecondary">
-                      {item.preparationTime} min
-                    </Typography>
+                  {/* Rating and Prep Time */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Rating value={item.rating} precision={0.1} readOnly size="small" />
+                      <Typography variant="body2" sx={{ ml: 0.5 }}>
+                        {item.rating}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <AccessTime sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
+                      <Typography variant="body2" color="textSecondary">
+                        {item.prepTime} min
+                      </Typography>
+                    </Box>
                   </Box>
 
                   {/* Tags */}
-                  <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                  <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap' }}>
                     {item.tags.map((tag) => (
                       <Chip key={tag} label={tag} size="small" variant="outlined" />
                     ))}
@@ -497,7 +594,7 @@ const MenuPage: React.FC = () => {
                 <Avatar src={item.image} sx={{ mr: 2 }} />
                 <ListItemText
                   primary={item.name}
-                  secondary={`₹${item.price} × ${item.quantity}`}
+                  secondary={`₹${item.discount ? (item.price * (100 - item.discount) / 100).toFixed(0) : item.price} × ${item.quantity}`}
                 />
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <IconButton onClick={() => removeFromCart(item.id)} size="small">
@@ -517,6 +614,13 @@ const MenuPage: React.FC = () => {
             <Typography variant="h6" sx={{ mb: 2 }}>
               Total: ₹{getTotalPrice()}
             </Typography>
+            
+            {user && (
+              <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                Food Card Balance: ₹{currentBalance}
+              </Typography>
+            )}
+
             <Button
               variant="contained"
               fullWidth
@@ -530,6 +634,121 @@ const MenuPage: React.FC = () => {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Payment Method Selection Dialog */}
+      <Dialog open={showPaymentDialog} onClose={() => setShowPaymentDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Choose Payment Method</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+            Order Total: ₹{totalAmount}
+          </Typography>
+
+          <RadioGroup
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value as 'food_card' | 'external')}
+          >
+            <FormControlLabel
+              value="food_card"
+              control={<Radio />}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  <AccountBalanceWallet sx={{ mr: 2, color: hasInsufficientBalance ? 'error.main' : 'primary.main' }} />
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="body1">
+                      Food Card
+                    </Typography>
+                    <Typography variant="body2" color={hasInsufficientBalance ? 'error' : 'textSecondary'}>
+                      Balance: ₹{currentBalance}
+                      {hasInsufficientBalance && ' (Insufficient)'}
+                    </Typography>
+                  </Box>
+                </Box>
+              }
+              disabled={hasInsufficientBalance}
+              sx={{ mb: 2, p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+            />
+            
+            <FormControlLabel
+              value="external"
+              control={<Radio />}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <CreditCard sx={{ mr: 2, color: 'primary.main' }} />
+                  <Box>
+                    <Typography variant="body1">
+                      External Payment
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      Credit/Debit Card, UPI, Net Banking
+                    </Typography>
+                  </Box>
+                </Box>
+              }
+              sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+            />
+          </RadioGroup>
+
+          {hasInsufficientBalance && paymentMethod === 'food_card' && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              <AlertTitle>Insufficient Balance</AlertTitle>
+              Please recharge your food card or use external payment method.
+              <Button 
+                size="small" 
+                sx={{ ml: 2 }}
+                onClick={() => {
+                  setShowPaymentDialog(false);
+                  setShowCart(false);
+                  navigate('/payment');
+                }}
+              >
+                Recharge Now
+              </Button>
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowPaymentDialog(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handlePaymentMethodConfirm}
+            disabled={hasInsufficientBalance && paymentMethod === 'food_card'}
+            startIcon={paymentMethod === 'food_card' ? <AccountBalanceWallet /> : <CreditCard />}
+          >
+            Pay ₹{totalAmount}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={orderSuccess} onClose={() => setOrderSuccess(false)}>
+        <DialogContent sx={{ textAlign: 'center', p: 4 }}>
+          <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+          <Typography variant="h5" gutterBottom>
+            Order Placed Successfully!
+          </Typography>
+          <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+            Your order has been confirmed and is being prepared.
+          </Typography>
+          <Button variant="contained" onClick={() => {
+            setOrderSuccess(false);
+            navigate('/orders');
+          }}>
+            View Orders
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Alert Snackbar */}
+      <Snackbar 
+        open={!!alertMessage} 
+        autoHideDuration={6000} 
+        onClose={() => setAlertMessage(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity={alertSeverity} onClose={() => setAlertMessage(null)}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

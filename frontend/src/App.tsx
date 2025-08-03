@@ -8,6 +8,8 @@ import MenuPage from './pages/MenuPage';
 import OrdersPage from './pages/OrdersPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import VendorPortal from './pages/VendorPortal';
+import CafeteriaManagerDashboard from './pages/CafeteriaManagerDashboard';
+import PaymentPage from './pages/PaymentPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -17,7 +19,24 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAppSelector } from './hooks/redux';
 
 const App: React.FC = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+
+  // Role-based default route
+  const getRoleBasedRoute = () => {
+    if (!user) return '/login';
+    
+    switch (user.role) {
+      case 'VENDOR':
+        return '/vendor-portal';
+      case 'CAFETERIA_MANAGER':
+        return '/manager-dashboard';
+      case 'ADMIN':
+        return '/dashboard';
+      case 'EMPLOYEE':
+      default:
+        return '/dashboard';
+    }
+  };
 
   return (
     <Box className="app-container">
@@ -31,10 +50,27 @@ const App: React.FC = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             
-            {/* Protected routes */}
+            {/* Role-based default route */}
             <Route path="/" element={
-              <ProtectedRoute>
+              isAuthenticated ? 
+                <Navigate to={getRoleBasedRoute()} replace /> : 
+                <Navigate to="/login" replace />
+            } />
+            
+            {/* Protected routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/manager-dashboard" element={
+              <ProtectedRoute allowedRoles={['CAFETERIA_MANAGER']}>
+                <CafeteriaManagerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/vendor-portal" element={
+              <ProtectedRoute allowedRoles={['VENDOR']}>
+                <VendorPortal />
               </ProtectedRoute>
             } />
             <Route path="/menu" element={
@@ -47,14 +83,14 @@ const App: React.FC = () => {
                 <OrdersPage />
               </ProtectedRoute>
             } />
-            <Route path="/analytics" element={
-              <ProtectedRoute requiredRole={['ADMIN', 'CAFETERIA_MANAGER']}>
-                <AnalyticsPage />
+            <Route path="/payment" element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER']}>
+                <PaymentPage />
               </ProtectedRoute>
             } />
-            <Route path="/vendor" element={
-              <ProtectedRoute requiredRole={['VENDOR', 'CAFETERIA_MANAGER', 'ADMIN']}>
-                <VendorPortal />
+            <Route path="/analytics" element={
+              <ProtectedRoute>
+                <AnalyticsPage />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={
@@ -67,8 +103,8 @@ const App: React.FC = () => {
                 <SettingsPage />
               </ProtectedRoute>
             } />
-            
-            {/* Redirect */}
+
+            {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Box>

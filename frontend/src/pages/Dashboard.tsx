@@ -23,10 +23,12 @@ import {
   LocalDining,
 } from '@mui/icons-material';
 import { useAppSelector } from '../hooks/redux';
+import { useNavigate } from 'react-router-dom';
 import RechargeDialog from '../components/payment/RechargeDialog';
 
 const Dashboard: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [rechargeDialogOpen, setRechargeDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -191,7 +193,11 @@ const Dashboard: React.FC = () => {
                 {user?.role === 'EMPLOYEE' && (
                   <>
                     <Grid item xs={12} sm={6}>
-                      <Card variant="outlined" sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}>
+                      <Card 
+                        variant="outlined" 
+                        sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+                        onClick={() => navigate('/menu')}
+                      >
                         <Typography variant="subtitle1">View Menu</Typography>
                         <Typography variant="body2" color="textSecondary">
                           Browse today's menu and place orders
@@ -199,7 +205,11 @@ const Dashboard: React.FC = () => {
                       </Card>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <Card variant="outlined" sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}>
+                      <Card 
+                        variant="outlined" 
+                        sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+                        onClick={() => navigate('/orders')}
+                      >
                         <Typography variant="subtitle1">My Orders</Typography>
                         <Typography variant="body2" color="textSecondary">
                           View your order history and track current orders
@@ -207,10 +217,14 @@ const Dashboard: React.FC = () => {
                       </Card>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <Card variant="outlined" sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}>
-                        <Typography variant="subtitle1">Recharge Card</Typography>
+                      <Card 
+                        variant="outlined" 
+                        sx={{ p: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+                        onClick={() => navigate('/payment')}
+                      >
+                        <Typography variant="subtitle1">Manage Payments</Typography>
                         <Typography variant="body2" color="textSecondary">
-                          Add money to your food card
+                          Recharge food card and view transaction history
                         </Typography>
                       </Card>
                     </Grid>

@@ -1,0 +1,46 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:atomix_db
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+  
+  h2:
+    console:
+      enabled: false
+
+logging:
+  level:
+    com.atomix: INFO
+    root: WARN
+
+# CORS configuration for production
+cors:
+  allowed-origins: 
+    - "https://*.railway.app"
+    - "https://*.vercel.app"
+    - "https://*.netlify.app"
+    - "https://*.onrender.com"
+    - "https://*.herokuapp.com"
+
+# Razorpay configuration
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:rzp_test_HYaOsl8oUnHAtT}
+  key-secret: ${RAZORPAY_KEY_SECRET:N2rvYXLJyjhBGPb4uUmsq3gg}
+
+# JWT configuration
+jwt:
+  secret: ${JWT_SECRET:atomix-super-secret-key-for-jwt-token-generation-in-production}
+  expiration: 86400 

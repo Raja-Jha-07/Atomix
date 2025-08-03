@@ -30,11 +30,21 @@ import {
 } from '@mui/icons-material';
 import { useAppSelector } from '../hooks/redux';
 
+interface MetricData {
+  title: string;
+  value: string;
+  change: string;
+  trend: string;
+  icon: React.ReactElement;
+  color: string;
+  description?: string;
+}
+
 const AnalyticsPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
 
   // Admin/Manager business metrics
-  const businessMetrics = [
+  const businessMetrics: MetricData[] = [
     {
       title: 'Total Revenue',
       value: '₹2,45,670',
@@ -70,7 +80,7 @@ const AnalyticsPage: React.FC = () => {
   ];
 
   // Employee personal analytics
-  const personalMetrics = [
+  const personalMetrics: MetricData[] = [
     {
       title: 'Monthly Spending',
       value: '₹2,340',
