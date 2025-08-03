@@ -1,6 +1,8 @@
 package com.atomix.cafeteria.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -17,38 +19,79 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "razorpay_order_id", unique = true, nullable = false)
-    private String razorpayOrderId;
-    
-    @Column(name = "razorpay_payment_id")
-    private String razorpayPaymentId;
-    
-    @Column(name = "razorpay_signature")
-    private String razorpaySignature;
+    @Column(name = "payment_id", unique = true, nullable = false)
+    private String paymentId; // Internal payment ID
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order; // Null for food card top-ups
+    
+    @NotNull
+    @PositiveOrZero
+    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
     
-    @Column(nullable = false)
-    private String currency = "INR";
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod;
     
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus;
+    
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_type", nullable = false)
+    private PaymentType paymentType; // ORDER_PAYMENT or FOOD_CARD_TOPUP
+    
+    // Gateway specific fields
+    @Column(name = "gateway_payment_id")
+    private String gatewayPaymentId; // Razorpay payment_id or Stripe payment_intent_id
+    
+    @Column(name = "gateway_order_id")
+    private String gatewayOrderId; // Razorpay order_id or Stripe client_secret
+    
+    @Column(name = "gateway_signature")
+    private String gatewaySignature; // For payment verification
+    
+    @Column(name = "gateway_receipt")
+    private String gatewayReceipt; // Receipt number from gateway
+    
+    @Column(name = "gateway_currency")
+    private String gatewayCurrency = "INR";
+    
+    // Payment metadata
     @Column(name = "description")
     private String description;
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentStatus status = PaymentStatus.CREATED;
+    @Column(name = "failure_reason")
+    private String failureReason;
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentType type;
+    @Column(name = "refund_id")
+    private String refundId; // For refund tracking
     
-    @Column(name = "receipt_number")
-    private String receiptNumber;
+    @PositiveOrZero
+    @Column(name = "refund_amount", precision = 10, scale = 2)
+    private BigDecimal refundAmount = BigDecimal.ZERO;
+    
+    // Timestamps
+    @Column(name = "gateway_created_at")
+    private LocalDateTime gatewayCreatedAt;
+    
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
+    
+    @Column(name = "failed_at")
+    private LocalDateTime failedAt;
+    
+    @Column(name = "refunded_at")
+    private LocalDateTime refundedAt;
     
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -61,14 +104,13 @@ public class Payment {
     // Constructors
     public Payment() {}
     
-    public Payment(String razorpayOrderId, User user, BigDecimal amount, String currency, 
-                   String description, PaymentType type) {
-        this.razorpayOrderId = razorpayOrderId;
+    public Payment(String paymentId, User user, BigDecimal amount, PaymentMethod paymentMethod, PaymentType paymentType) {
+        this.paymentId = paymentId;
         this.user = user;
         this.amount = amount;
-        this.currency = currency;
-        this.description = description;
-        this.type = type;
+        this.paymentMethod = paymentMethod;
+        this.paymentType = paymentType;
+        this.paymentStatus = PaymentStatus.PENDING;
     }
     
     // Getters and Setters
@@ -80,28 +122,12 @@ public class Payment {
         this.id = id;
     }
     
-    public String getRazorpayOrderId() {
-        return razorpayOrderId;
+    public String getPaymentId() {
+        return paymentId;
     }
     
-    public void setRazorpayOrderId(String razorpayOrderId) {
-        this.razorpayOrderId = razorpayOrderId;
-    }
-    
-    public String getRazorpayPaymentId() {
-        return razorpayPaymentId;
-    }
-    
-    public void setRazorpayPaymentId(String razorpayPaymentId) {
-        this.razorpayPaymentId = razorpayPaymentId;
-    }
-    
-    public String getRazorpaySignature() {
-        return razorpaySignature;
-    }
-    
-    public void setRazorpaySignature(String razorpaySignature) {
-        this.razorpaySignature = razorpaySignature;
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
     }
     
     public User getUser() {
@@ -112,6 +138,14 @@ public class Payment {
         this.user = user;
     }
     
+    public Order getOrder() {
+        return order;
+    }
+    
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+    
     public BigDecimal getAmount() {
         return amount;
     }
@@ -120,12 +154,68 @@ public class Payment {
         this.amount = amount;
     }
     
-    public String getCurrency() {
-        return currency;
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
     
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+    
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+    
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
+    
+    public void setPaymentType(PaymentType paymentType) {
+        this.paymentType = paymentType;
+    }
+    
+    public String getGatewayPaymentId() {
+        return gatewayPaymentId;
+    }
+    
+    public void setGatewayPaymentId(String gatewayPaymentId) {
+        this.gatewayPaymentId = gatewayPaymentId;
+    }
+    
+    public String getGatewayOrderId() {
+        return gatewayOrderId;
+    }
+    
+    public void setGatewayOrderId(String gatewayOrderId) {
+        this.gatewayOrderId = gatewayOrderId;
+    }
+    
+    public String getGatewaySignature() {
+        return gatewaySignature;
+    }
+    
+    public void setGatewaySignature(String gatewaySignature) {
+        this.gatewaySignature = gatewaySignature;
+    }
+    
+    public String getGatewayReceipt() {
+        return gatewayReceipt;
+    }
+    
+    public void setGatewayReceipt(String gatewayReceipt) {
+        this.gatewayReceipt = gatewayReceipt;
+    }
+    
+    public String getGatewayCurrency() {
+        return gatewayCurrency;
+    }
+    
+    public void setGatewayCurrency(String gatewayCurrency) {
+        this.gatewayCurrency = gatewayCurrency;
     }
     
     public String getDescription() {
@@ -136,28 +226,60 @@ public class Payment {
         this.description = description;
     }
     
-    public PaymentStatus getStatus() {
-        return status;
+    public String getFailureReason() {
+        return failureReason;
     }
     
-    public void setStatus(PaymentStatus status) {
-        this.status = status;
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
     }
     
-    public PaymentType getType() {
-        return type;
+    public String getRefundId() {
+        return refundId;
     }
     
-    public void setType(PaymentType type) {
-        this.type = type;
+    public void setRefundId(String refundId) {
+        this.refundId = refundId;
     }
     
-    public String getReceiptNumber() {
-        return receiptNumber;
+    public BigDecimal getRefundAmount() {
+        return refundAmount;
     }
     
-    public void setReceiptNumber(String receiptNumber) {
-        this.receiptNumber = receiptNumber;
+    public void setRefundAmount(BigDecimal refundAmount) {
+        this.refundAmount = refundAmount;
+    }
+    
+    public LocalDateTime getGatewayCreatedAt() {
+        return gatewayCreatedAt;
+    }
+    
+    public void setGatewayCreatedAt(LocalDateTime gatewayCreatedAt) {
+        this.gatewayCreatedAt = gatewayCreatedAt;
+    }
+    
+    public LocalDateTime getProcessedAt() {
+        return processedAt;
+    }
+    
+    public void setProcessedAt(LocalDateTime processedAt) {
+        this.processedAt = processedAt;
+    }
+    
+    public LocalDateTime getFailedAt() {
+        return failedAt;
+    }
+    
+    public void setFailedAt(LocalDateTime failedAt) {
+        this.failedAt = failedAt;
+    }
+    
+    public LocalDateTime getRefundedAt() {
+        return refundedAt;
+    }
+    
+    public void setRefundedAt(LocalDateTime refundedAt) {
+        this.refundedAt = refundedAt;
     }
     
     public LocalDateTime getCreatedAt() {
@@ -175,6 +297,29 @@ public class Payment {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+    
+    // Utility methods
+    public boolean isSuccessful() {
+        return paymentStatus == PaymentStatus.COMPLETED;
+    }
+    
+    public boolean isFailed() {
+        return paymentStatus == PaymentStatus.FAILED;
+    }
+    
+    public boolean isPending() {
+        return paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.CREATED;
+    }
+    
+    public boolean canBeRefunded() {
+        return paymentStatus == PaymentStatus.COMPLETED && refundAmount.compareTo(amount) < 0;
+    }
+    
+    public boolean isFoodCardTopup() {
+        return paymentType == PaymentType.FOOD_CARD_TOPUP;
+    }
+    
+    public boolean isOrderPayment() {
+        return paymentType == PaymentType.ORDER_PAYMENT;
+    }
 }
-
- 

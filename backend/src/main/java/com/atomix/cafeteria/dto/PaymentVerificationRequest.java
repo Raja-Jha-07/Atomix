@@ -4,22 +4,24 @@ import jakarta.validation.constraints.NotBlank;
 
 public class PaymentVerificationRequest {
     
-    @NotBlank
+    @NotBlank(message = "Payment ID is required")
     private String paymentId;
     
-    @NotBlank
-    private String orderId;
+    @NotBlank(message = "Gateway payment ID is required")
+    private String gatewayPaymentId;
     
-    @NotBlank
-    private String signature;
+    @NotBlank(message = "Gateway order ID is required")
+    private String gatewayOrderId;
+    
+    private String gatewaySignature; // For Razorpay signature verification
     
     // Constructors
     public PaymentVerificationRequest() {}
     
-    public PaymentVerificationRequest(String paymentId, String orderId, String signature) {
+    public PaymentVerificationRequest(String paymentId, String gatewayPaymentId, String gatewayOrderId) {
         this.paymentId = paymentId;
-        this.orderId = orderId;
-        this.signature = signature;
+        this.gatewayPaymentId = gatewayPaymentId;
+        this.gatewayOrderId = gatewayOrderId;
     }
     
     // Getters and Setters
@@ -31,19 +33,27 @@ public class PaymentVerificationRequest {
         this.paymentId = paymentId;
     }
     
-    public String getOrderId() {
-        return orderId;
+    public String getGatewayPaymentId() {
+        return gatewayPaymentId;
     }
     
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
+    public void setGatewayPaymentId(String gatewayPaymentId) {
+        this.gatewayPaymentId = gatewayPaymentId;
     }
     
-    public String getSignature() {
-        return signature;
+    public String getGatewayOrderId() {
+        return gatewayOrderId;
     }
     
-    public void setSignature(String signature) {
-        this.signature = signature;
+    public void setGatewayOrderId(String gatewayOrderId) {
+        this.gatewayOrderId = gatewayOrderId;
+    }
+    
+    public String getGatewaySignature() {
+        return gatewaySignature;
+    }
+    
+    public void setGatewaySignature(String gatewaySignature) {
+        this.gatewaySignature = gatewaySignature;
     }
 } 

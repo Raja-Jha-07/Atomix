@@ -11,6 +11,7 @@ import VendorPortal from './pages/VendorPortal';
 import CafeteriaManagerDashboard from './pages/CafeteriaManagerDashboard';
 import PaymentPage from './pages/PaymentPage';
 import ProfilePage from './pages/ProfilePage';
+import PaymentPage from './pages/PaymentPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -96,6 +97,11 @@ const App: React.FC = () => {
             <Route path="/profile" element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/payments" element={
+              <ProtectedRoute>
+                <PaymentPage />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={

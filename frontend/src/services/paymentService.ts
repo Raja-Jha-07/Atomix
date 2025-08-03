@@ -1,217 +1,250 @@
-// Extend Window interface to include Razorpay
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
+import axios from 'axios';
+
+const API_BASE_URL = '';
+
+// Payment interfaces matching backend DTOs
+export interface PaymentMethod {
+  FOOD_CARD: 'FOOD_CARD';
+  CREDIT_CARD: 'CREDIT_CARD';
+  DEBIT_CARD: 'DEBIT_CARD';
+  UPI: 'UPI';
+  NET_BANKING: 'NET_BANKING';
+  WALLET: 'WALLET';
+  CASH: 'CASH';
+  RAZORPAY: 'RAZORPAY';
+  STRIPE: 'STRIPE';
 }
 
-export interface PaymentOptions {
+export interface PaymentType {
+  ORDER_PAYMENT: 'ORDER_PAYMENT';
+  FOOD_CARD_TOPUP: 'FOOD_CARD_TOPUP';
+}
+
+export interface PaymentStatus {
+  PENDING: 'PENDING';
+  PROCESSING: 'PROCESSING';
+  PAID: 'PAID';
+  FAILED: 'FAILED';
+  REFUNDED: 'REFUNDED';
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED';
+}
+
+export interface PaymentRequest {
   amount: number;
-  currency: string;
-  description: string;
-  prefill: {
-    name: string;
-    email: string;
-    contact?: string;
-  };
+  paymentMethod: keyof PaymentMethod;
+  paymentType: keyof PaymentType;
+  orderId?: number;
+  description?: string;
 }
 
-export interface PaymentResult {
-  success: boolean;
-  paymentId?: string;
-  orderId?: string;
-  signature?: string;
-  error?: string;
+export interface PaymentResponse {
+  paymentId: string;
+  gatewayPaymentId?: string;
+  gatewayOrderId?: string;
+  amount: number;
+  paymentMethod: keyof PaymentMethod;
+  paymentStatus: keyof PaymentStatus;
+  paymentType: keyof PaymentType;
+  currency: string;
+  description?: string;
+  failureReason?: string;
+  createdAt: string;
+  processedAt?: string;
+  
+  // Gateway specific fields
+  razorpayKeyId?: string;
+  stripePublicKey?: string;
+  clientSecret?: string;
+}
+
+export interface PaymentVerificationRequest {
+  paymentId: string;
+  gatewayPaymentId: string;
+  gatewayOrderId: string;
+  gatewaySignature?: string;
+}
+
+export interface PaymentHistoryResponse {
+  id: number;
+  paymentId: string;
+  amount: number;
+  paymentMethod: keyof PaymentMethod;
+  paymentStatus: keyof PaymentStatus;
+  paymentType: keyof PaymentType;
+  description?: string;
+  failureReason?: string;
+  refundAmount: number;
+  createdAt: string;
+  processedAt?: string;
+  failedAt?: string;
+  orderNumber?: string;
+  vendorName?: string;
+}
+
+export interface FoodCardTopUpRequest {
+  amount: number;
+  paymentMethod: keyof PaymentMethod;
+}
+
+export interface FoodCardBalanceResponse {
+  userId: number;
+  balance: number;
+  lastUpdated: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
 }
 
 class PaymentService {
-  private razorpayKeyId: string;
-
-  constructor() {
-    this.razorpayKeyId = process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_HYaOsl8oUnHAtT';
+  private getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
   }
 
-  /**
-   * Create order on backend and initiate Razorpay payment
-   */
-  async initiatePayment(options: PaymentOptions): Promise<PaymentResult> {
-    try {
-      // First, create order on backend
-      const orderResponse = await this.createOrder(options.amount, options.currency);
-      
-      if (!orderResponse.success) {
-        return {
-          success: false,
-          error: orderResponse.error || 'Failed to create order'
-        };
-      }
+  // Create payment order
+  async createPayment(request: PaymentRequest): Promise<PaymentResponse> {
+    const response = await axios.post(
+      `${API_BASE_URL}/payments/create`,
+      request,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
 
-      // Initialize Razorpay payment
-      return new Promise((resolve) => {
-        const razorpayOptions = {
-          key: this.razorpayKeyId,
-          amount: orderResponse.order.amount,
-          currency: orderResponse.order.currency,
-          name: 'Atomix Cafeteria',
-          description: options.description,
-          order_id: orderResponse.order.id,
-          image: '/logo192.png', // Your app logo
-          prefill: {
-            name: options.prefill.name,
-            email: options.prefill.email,
-            contact: options.prefill.contact || '',
-          },
-          theme: {
-            color: '#1976d2', // Material UI primary color
-          },
-          handler: async (response: any) => {
-            // Payment successful, verify on backend
-            const verificationResult = await this.verifyPayment({
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-              signature: response.razorpay_signature,
-            });
+  // Verify payment
+  async verifyPayment(request: PaymentVerificationRequest): Promise<PaymentResponse> {
+    const response = await axios.post(
+      `${API_BASE_URL}/payments/verify`,
+      request,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
 
-            resolve({
-              success: verificationResult.success,
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id,
-              signature: response.razorpay_signature,
-              error: verificationResult.error,
-            });
-          },
-          modal: {
-            ondismiss: () => {
-              resolve({
-                success: false,
-                error: 'Payment cancelled by user',
-              });
-            },
-          },
-        };
+  // Get payment details
+  async getPayment(paymentId: string): Promise<PaymentResponse> {
+    const response = await axios.get(
+      `${API_BASE_URL}/payments/${paymentId}`,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
 
-        if (window.Razorpay) {
-          const razorpay = new window.Razorpay(razorpayOptions);
-          razorpay.open();
-        } else {
-          resolve({
-            success: false,
-            error: 'Razorpay SDK not loaded',
-          });
+  // Get payment history
+  async getPaymentHistory(page = 0, size = 10): Promise<PageResponse<PaymentHistoryResponse>> {
+    const response = await axios.get(
+      `${API_BASE_URL}/payments/history?page=${page}&size=${size}`,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
+
+  // Get user payment history (admin/manager)
+  async getUserPaymentHistory(userId: number, page = 0, size = 10): Promise<PageResponse<PaymentHistoryResponse>> {
+    const response = await axios.get(
+      `${API_BASE_URL}/payments/history/${userId}?page=${page}&size=${size}`,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
+
+  // Top up food card
+  async topUpFoodCard(request: FoodCardTopUpRequest): Promise<PaymentResponse> {
+    const response = await axios.post(
+      `${API_BASE_URL}/payments/topup`,
+      request,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
+
+  // Get food card balance
+  async getFoodCardBalance(): Promise<FoodCardBalanceResponse> {
+    const response = await axios.get(
+      `${API_BASE_URL}/payments/foodcard/balance`,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
+
+  // Get user food card balance (admin/manager)
+  async getUserFoodCardBalance(userId: number): Promise<FoodCardBalanceResponse> {
+    const response = await axios.get(
+      `${API_BASE_URL}/payments/foodcard/balance/${userId}`,
+      { headers: this.getAuthHeaders() }
+    );
+    return response.data;
+  }
+
+  // Load Razorpay script
+  async loadRazorpayScript(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  }
+
+  // Process Razorpay payment
+  async processRazorpayPayment(
+    paymentResponse: PaymentResponse,
+    onSuccess: (response: any) => void,
+    onFailure: (error: any) => void
+  ) {
+    const isLoaded = await this.loadRazorpayScript();
+    if (!isLoaded) {
+      onFailure(new Error('Failed to load Razorpay SDK'));
+      return;
+    }
+
+    const options = {
+      key: paymentResponse.razorpayKeyId,
+      amount: paymentResponse.amount * 100, // Convert to paise
+      currency: paymentResponse.currency,
+      name: 'Atomix Cafeteria',
+      description: paymentResponse.description || 'Payment',
+      order_id: paymentResponse.gatewayOrderId,
+      handler: async (response: any) => {
+        try {
+          // Verify payment on backend
+          const verificationRequest: PaymentVerificationRequest = {
+            paymentId: paymentResponse.paymentId,
+            gatewayPaymentId: response.razorpay_payment_id,
+            gatewayOrderId: response.razorpay_order_id,
+            gatewaySignature: response.razorpay_signature
+          };
+          
+          const verifiedPayment = await this.verifyPayment(verificationRequest);
+          onSuccess(verifiedPayment);
+        } catch (error) {
+          onFailure(error);
         }
-      });
-    } catch (error) {
-      console.error('Payment initiation error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Payment initiation failed',
-      };
-    }
-  }
-
-  /**
-   * Create order on backend
-   */
-  private async createOrder(amount: number, currency: string = 'INR') {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8083/api/v1'}/payments/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          amount: amount * 100, // Convert to paise
-          currency,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.message || 'Failed to create order',
-        };
+      },
+      modal: {
+        ondismiss: () => {
+          onFailure(new Error('Payment cancelled by user'));
+        }
+      },
+      theme: {
+        color: '#1976d2'
       }
+    };
 
-      return {
-        success: true,
-        order: data.order,
-      };
-    } catch (error) {
-      console.error('Create order error:', error);
-      return {
-        success: false,
-        error: 'Network error while creating order',
-      };
-    }
-  }
-
-  /**
-   * Verify payment on backend
-   */
-  private async verifyPayment(paymentData: {
-    paymentId: string;
-    orderId: string;
-    signature: string;
-  }) {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8083/api/v1'}/payments/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(paymentData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.message || 'Payment verification failed',
-        };
-      }
-
-      return {
-        success: true,
-        data: data,
-      };
-    } catch (error) {
-      console.error('Payment verification error:', error);
-      return {
-        success: false,
-        error: 'Network error during payment verification',
-      };
-    }
-  }
-
-  /**
-   * Recharge food card
-   */
-  async rechargeFoodCard(amount: number, userInfo: { name: string; email: string; contact?: string }): Promise<PaymentResult> {
-    return this.initiatePayment({
-      amount,
-      currency: 'INR',
-      description: `Food Card Recharge - ₹${amount}`,
-      prefill: userInfo,
-    });
-  }
-
-  /**
-   * Process order payment
-   */
-  async payForOrder(orderTotal: number, userInfo: { name: string; email: string; contact?: string }): Promise<PaymentResult> {
-    return this.initiatePayment({
-      amount: orderTotal,
-      currency: 'INR',
-      description: `Order Payment - ₹${orderTotal}`,
-      prefill: userInfo,
-    });
+    const razorpay = new (window as any).Razorpay(options);
+    razorpay.open();
   }
 }
 
 export const paymentService = new PaymentService();
-export default paymentService; 

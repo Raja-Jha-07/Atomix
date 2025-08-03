@@ -1,41 +1,68 @@
 package com.atomix.cafeteria.dto;
 
+import com.atomix.cafeteria.entity.PaymentMethod;
+import com.atomix.cafeteria.entity.PaymentType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.math.BigDecimal;
+
 public class PaymentRequest {
     
-    @NotNull
-    @Positive
-    private Integer amount; // Amount in paise
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be positive")
+    private BigDecimal amount;
     
-    private String currency = "INR";
+    @NotNull(message = "Payment method is required")
+    private PaymentMethod paymentMethod;
+    
+    @NotNull(message = "Payment type is required")
+    private PaymentType paymentType;
+    
+    private Long orderId; // Optional, required only for order payments
+    
     private String description;
     
     // Constructors
     public PaymentRequest() {}
     
-    public PaymentRequest(Integer amount, String currency, String description) {
+    public PaymentRequest(BigDecimal amount, PaymentMethod paymentMethod, PaymentType paymentType) {
         this.amount = amount;
-        this.currency = currency;
-        this.description = description;
+        this.paymentMethod = paymentMethod;
+        this.paymentType = paymentType;
     }
     
     // Getters and Setters
-    public Integer getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
     
-    public void setAmount(Integer amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
     
-    public String getCurrency() {
-        return currency;
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
     
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
+    
+    public void setPaymentType(PaymentType paymentType) {
+        this.paymentType = paymentType;
+    }
+    
+    public Long getOrderId() {
+        return orderId;
+    }
+    
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
     
     public String getDescription() {

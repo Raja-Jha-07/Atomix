@@ -66,9 +66,9 @@ const navigationItems: NavigationItem[] = [
     requiredRoles: ['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER'],
   },
   {
-    text: 'Payment',
+    text: 'Payments',
     icon: <Payment />,
-    path: '/payment',
+    path: '/payments',
     requiredRoles: ['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER'],
   },
   {

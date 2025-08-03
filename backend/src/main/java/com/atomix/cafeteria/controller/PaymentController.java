@@ -1,32 +1,28 @@
 package com.atomix.cafeteria.controller;
 
-import com.atomix.cafeteria.dto.ApiResponse;
-import com.atomix.cafeteria.dto.PaymentRequest;
-import com.atomix.cafeteria.dto.PaymentVerificationRequest;
-import com.atomix.cafeteria.entity.Payment;
-import com.atomix.cafeteria.entity.PaymentType;
+import com.atomix.cafeteria.dto.*;
+import com.atomix.cafeteria.security.UserPrincipal;
 import com.atomix.cafeteria.service.PaymentService;
-import com.razorpay.RazorpayException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
 
 @RestController
-@RequestMapping("/api/v1/payments")
-@CrossOrigin(origins = "*")
+@RequestMapping("/payments")
+@Tag(name = "Payment Management", description = "APIs for payment processing with Razorpay/Stripe integration")
+@CrossOrigin(origins = "${app.cors.allowed-origins}")
 public class PaymentController {
-    
-    private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
     
     private final PaymentService paymentService;
     
@@ -34,126 +30,167 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
     
-    /**
-     * Create Razorpay order for food card recharge
-     */
-    @PostMapping("/create-order")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createOrder(
-            @Valid @RequestBody PaymentRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    @Operation(summary = "Create payment order", description = "Create a new payment order for Razorpay/Stripe or process food card payment")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Payment order created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid payment request"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "500", description = "Payment gateway error")
+    })
+    @PostMapping("/create")
+    public ResponseEntity<PaymentResponse> createPayment(
+            @Parameter(description = "Payment request details") @Valid @RequestBody PaymentRequest request,
+            Authentication authentication) {
         
-        try {
-            logger.info("Creating payment order for user {} with amount {}", 
-                    userDetails.getUsername(), request.getAmount());
-            
-            JSONObject order = paymentService.createOrder(request, userDetails.getUsername(), PaymentType.FOOD_CARD_RECHARGE);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("order", order.toMap());
-            
-            return ResponseEntity.ok(new ApiResponse<>(true, "Order created successfully", response));
-            
-        } catch (RazorpayException e) {
-            logger.error("Error creating Razorpay order for user {}: {}", userDetails.getUsername(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "Failed to create order: " + e.getMessage(), null));
-        } catch (Exception e) {
-            logger.error("Unexpected error creating order for user {}: {}", userDetails.getUsername(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "An unexpected error occurred", null));
-        }
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        PaymentResponse response = paymentService.createPayment(request, userPrincipal.getId());
+        
+        return ResponseEntity.ok(response);
     }
     
-    /**
-     * Verify payment and update food card balance
-     */
+    @Operation(summary = "Verify payment", description = "Verify payment from gateway callback and update payment status")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Payment verified successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid verification request"),
+        @ApiResponse(responseCode = "404", description = "Payment not found"),
+        @ApiResponse(responseCode = "500", description = "Verification error")
+    })
     @PostMapping("/verify")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> verifyPayment(
-            @Valid @RequestBody PaymentVerificationRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<PaymentResponse> verifyPayment(
+            @Parameter(description = "Payment verification details") @Valid @RequestBody PaymentVerificationRequest request) {
         
-        try {
-            logger.info("Verifying payment for user {} with order {}", 
-                    userDetails.getUsername(), request.getOrderId());
-            
-            boolean isVerified = paymentService.verifyPayment(request, userDetails.getUsername());
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("verified", isVerified);
-            response.put("paymentId", request.getPaymentId());
-            response.put("orderId", request.getOrderId());
-            
-            if (isVerified) {
-                return ResponseEntity.ok(new ApiResponse<>(true, "Payment verified successfully", response));
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponse<>(false, "Payment verification failed", response));
-            }
-            
-        } catch (Exception e) {
-            logger.error("Error verifying payment for user {}: {}", userDetails.getUsername(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "Payment verification failed: " + e.getMessage(), null));
-        }
+        PaymentResponse response = paymentService.verifyPayment(request);
+        return ResponseEntity.ok(response);
     }
     
-    /**
-     * Get user's payment history
-     */
+    @Operation(summary = "Get payment details", description = "Get payment details by payment ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Payment details retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Payment not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @GetMapping("/{paymentId}")
+    @PreAuthorize("hasRole('ADMIN') or @paymentSecurity.canAccessPayment(authentication, #paymentId)")
+    public ResponseEntity<PaymentResponse> getPayment(
+            @Parameter(description = "Payment ID") @PathVariable String paymentId) {
+        
+        PaymentResponse response = paymentService.getPayment(paymentId);
+        return ResponseEntity.ok(response);
+    }
+    
+    @Operation(summary = "Get payment history", description = "Get paginated payment history for current user")
+    @ApiResponse(responseCode = "200", description = "Payment history retrieved successfully")
     @GetMapping("/history")
-    public ResponseEntity<ApiResponse<List<Payment>>> getPaymentHistory(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(required = false) String type) {
+    public ResponseEntity<Page<PaymentHistoryResponse>> getPaymentHistory(
+            @Parameter(description = "Pagination information") Pageable pageable,
+            Authentication authentication) {
         
-        try {
-            List<Payment> payments;
-            
-            if (type != null && !type.isEmpty()) {
-                PaymentType paymentType = PaymentType.valueOf(type.toUpperCase());
-                payments = paymentService.getUserPaymentHistoryByType(userDetails.getUsername(), paymentType);
-            } else {
-                payments = paymentService.getUserPaymentHistory(userDetails.getUsername());
-            }
-            
-            return ResponseEntity.ok(new ApiResponse<>(true, "Payment history retrieved successfully", payments));
-            
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(false, "Invalid payment type: " + type, null));
-        } catch (Exception e) {
-            logger.error("Error retrieving payment history for user {}: {}", userDetails.getUsername(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "Failed to retrieve payment history", null));
-        }
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Page<PaymentHistoryResponse> history = paymentService.getPaymentHistory(userPrincipal.getId(), pageable);
+        
+        return ResponseEntity.ok(history);
     }
     
-    /**
-     * Create order for food order payment
-     */
-    @PostMapping("/create-order-payment")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createOrderPayment(
-            @Valid @RequestBody PaymentRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    @Operation(summary = "Get user payment history", description = "Get paginated payment history for specific user (Admin/Manager only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Payment history retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/history/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CAFETERIA_MANAGER')")
+    public ResponseEntity<Page<PaymentHistoryResponse>> getUserPaymentHistory(
+            @Parameter(description = "User ID") @PathVariable Long userId,
+            @Parameter(description = "Pagination information") Pageable pageable) {
         
-        try {
-            logger.info("Creating order payment for user {} with amount {}", 
-                    userDetails.getUsername(), request.getAmount());
-            
-            JSONObject order = paymentService.createOrder(request, userDetails.getUsername(), PaymentType.ORDER_PAYMENT);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("order", order.toMap());
-            
-            return ResponseEntity.ok(new ApiResponse<>(true, "Order payment created successfully", response));
-            
-        } catch (RazorpayException e) {
-            logger.error("Error creating order payment for user {}: {}", userDetails.getUsername(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "Failed to create order payment: " + e.getMessage(), null));
-        } catch (Exception e) {
-            logger.error("Unexpected error creating order payment for user {}: {}", userDetails.getUsername(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, "An unexpected error occurred", null));
-        }
+        Page<PaymentHistoryResponse> history = paymentService.getPaymentHistory(userId, pageable);
+        return ResponseEntity.ok(history);
+    }
+    
+    @Operation(summary = "Top up food card", description = "Create payment order to top up user's food card balance")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Food card top-up order created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid top-up request"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @PostMapping("/topup")
+    public ResponseEntity<PaymentResponse> topUpFoodCard(
+            @Parameter(description = "Top-up amount and payment method") @Valid @RequestBody FoodCardTopUpRequest request,
+            Authentication authentication) {
+        
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        
+        // Create payment request for food card top-up
+        PaymentRequest paymentRequest = new PaymentRequest();
+        paymentRequest.setAmount(request.getAmount());
+        paymentRequest.setPaymentMethod(request.getPaymentMethod());
+        paymentRequest.setPaymentType(com.atomix.cafeteria.entity.PaymentType.FOOD_CARD_TOPUP);
+        paymentRequest.setDescription("Food Card Top-up - ₹" + request.getAmount());
+        
+        PaymentResponse response = paymentService.createPayment(paymentRequest, userPrincipal.getId());
+        return ResponseEntity.ok(response);
+    }
+    
+    @Operation(summary = "Get food card balance", description = "Get current user's food card balance")
+    @ApiResponse(responseCode = "200", description = "Food card balance retrieved successfully")
+    @GetMapping("/foodcard/balance")
+    public ResponseEntity<FoodCardBalanceResponse> getFoodCardBalance(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        BigDecimal balance = paymentService.getFoodCardBalance(userPrincipal.getId());
+        
+        FoodCardBalanceResponse response = new FoodCardBalanceResponse();
+        response.setBalance(balance);
+        response.setUserId(userPrincipal.getId());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @Operation(summary = "Get user food card balance", description = "Get specific user's food card balance (Admin/Manager only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Food card balance retrieved successfully"),
+        @ApiResponse(responseCode = "403", description = "Access denied"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/foodcard/balance/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CAFETERIA_MANAGER')")
+    public ResponseEntity<FoodCardBalanceResponse> getUserFoodCardBalance(
+            @Parameter(description = "User ID") @PathVariable Long userId) {
+        
+        BigDecimal balance = paymentService.getFoodCardBalance(userId);
+        
+        FoodCardBalanceResponse response = new FoodCardBalanceResponse();
+        response.setBalance(balance);
+        response.setUserId(userId);
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @Operation(summary = "Payment webhook", description = "Webhook endpoint for payment gateway callbacks")
+    @ApiResponse(responseCode = "200", description = "Webhook processed successfully")
+    @PostMapping("/webhook/{gateway}")
+    public ResponseEntity<String> paymentWebhook(
+            @Parameter(description = "Payment gateway (razorpay/stripe)") @PathVariable String gateway,
+            @RequestBody String payload,
+            @RequestHeader("X-Razorpay-Signature") String signature) {
+        
+        // TODO: Implement webhook processing for automatic payment verification
+        // This would handle payment status updates from Razorpay/Stripe
+        
+        return ResponseEntity.ok("Webhook received");
+    }
+    
+    @Operation(summary = "Health check", description = "Check payment gateway connectivity")
+    @ApiResponse(responseCode = "200", description = "Payment gateways are healthy")
+    @GetMapping("/health")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PaymentHealthResponse> healthCheck() {
+        // TODO: Implement health check for payment gateways
+        
+        PaymentHealthResponse response = new PaymentHealthResponse();
+        response.setRazorpayStatus("UP");
+        response.setStripeStatus("UP");
+        response.setTimestamp(java.time.LocalDateTime.now());
+        
+        return ResponseEntity.ok(response);
     }
 } 
