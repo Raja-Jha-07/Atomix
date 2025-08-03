@@ -7,6 +7,12 @@ import {
   CardContent,
   LinearProgress,
   Chip,
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Divider,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -15,10 +21,20 @@ import {
   People,
   AttachMoney,
   Schedule,
+  LocalDining,
+  AccountBalanceWallet,
+  ShoppingCart,
+  Favorite,
+  CalendarToday,
+  PieChart,
 } from '@mui/icons-material';
+import { useAppSelector } from '../hooks/redux';
 
 const AnalyticsPage: React.FC = () => {
-  const metrics = [
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Admin/Manager business metrics
+  const businessMetrics = [
     {
       title: 'Total Revenue',
       value: '₹2,45,670',
@@ -53,208 +69,298 @@ const AnalyticsPage: React.FC = () => {
     },
   ];
 
-  const popularItems = [
-    { name: 'Chicken Biryani', orders: 85, percentage: 90 },
-    { name: 'Paneer Butter Masala', orders: 67, percentage: 70 },
-    { name: 'Dal Tadka', orders: 52, percentage: 55 },
-    { name: 'Veg Fried Rice', orders: 41, percentage: 43 },
-    { name: 'Masala Chai', orders: 38, percentage: 40 },
+  // Employee personal analytics
+  const personalMetrics = [
+    {
+      title: 'Monthly Spending',
+      value: '₹2,340',
+      change: '+15%',
+      trend: 'up',
+      icon: <AccountBalanceWallet />,
+      color: 'primary',
+      description: 'Compared to last month',
+    },
+    {
+      title: 'Orders This Month',
+      value: '23',
+      change: '+5',
+      trend: 'up',
+      icon: <ShoppingCart />,
+      color: 'success',
+      description: '5 more than last month',
+    },
+    {
+      title: 'Favorite Vendors',
+      value: '3',
+      change: '',
+      trend: 'neutral',
+      icon: <Favorite />,
+      color: 'error',
+      description: 'Most ordered from',
+    },
+    {
+      title: 'Avg Order Value',
+      value: '₹102',
+      change: '+₹12',
+      trend: 'up',
+      icon: <LocalDining />,
+      color: 'warning',
+      description: 'Per order average',
+    },
   ];
 
-  const hourlyData = [
-    { time: '9 AM', orders: 12 },
-    { time: '10 AM', orders: 25 },
-    { time: '11 AM', orders: 18 },
-    { time: '12 PM', orders: 45 },
-    { time: '1 PM', orders: 62 },
-    { time: '2 PM', orders: 38 },
-    { time: '3 PM', orders: 22 },
-    { time: '4 PM', orders: 15 },
-    { time: '5 PM', orders: 28 },
-    { time: '6 PM', orders: 35 },
+  // Mock personal spending data
+  const personalSpendingBreakdown = [
+    { category: 'North Indian', amount: 890, percentage: 38 },
+    { category: 'South Indian', amount: 650, percentage: 28 },
+    { category: 'Street Food', amount: 480, percentage: 20 },
+    { category: 'Beverages', amount: 320, percentage: 14 },
   ];
+
+  // Mock recent activity for employees
+  const recentActivity = [
+    { date: 'Today', item: 'Veg Thali', vendor: 'North Indian Corner', amount: 120 },
+    { date: 'Yesterday', item: 'Masala Dosa', vendor: 'South Indian Express', amount: 80 },
+    { date: '2 days ago', item: 'Paneer Roll', vendor: 'Street Food Hub', amount: 90 },
+    { date: '3 days ago', item: 'Filter Coffee', vendor: 'Beverages Corner', amount: 25 },
+    { date: '4 days ago', item: 'Biryani', vendor: 'North Indian Corner', amount: 150 },
+  ];
+
+  const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'CAFETERIA_MANAGER';
+  const metricsToShow = isAdminOrManager ? businessMetrics : personalMetrics;
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Analytics Dashboard
-        </Typography>
-        <Typography variant="subtitle1" color="textSecondary">
-          Insights and performance metrics for your cafeteria
-        </Typography>
-      </Box>
+      <Typography variant="h4" gutterBottom>
+        {isAdminOrManager ? 'Business Analytics' : 'My Analytics'}
+      </Typography>
+      <Typography variant="subtitle1" color="textSecondary" sx={{ mb: 3 }}>
+        {isAdminOrManager 
+          ? 'Comprehensive overview of cafeteria operations and performance' 
+          : 'Your personal spending insights and order history'
+        }
+      </Typography>
 
-      {/* Key Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {metrics.map((metric, index) => (
+      <Grid container spacing={3}>
+        {/* Key Metrics */}
+        {metricsToShow.map((metric, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card>
+            <Card sx={{ height: '100%' }}>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom variant="overline">
-                      {metric.title}
-                    </Typography>
-                    <Typography variant="h5" gutterBottom>
-                      {metric.value}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {metric.trend === 'up' ? (
-                        <TrendingUp color="success" sx={{ fontSize: 16 }} />
-                      ) : (
-                        <TrendingDown color="error" sx={{ fontSize: 16 }} />
-                      )}
-                      <Chip
-                        label={metric.change}
-                        color={metric.trend === 'up' ? 'success' : 'error'}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </Box>
-                  </Box>
-                  <Box
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Avatar
                     sx={{
-                      backgroundColor: `${metric.color}.light`,
-                      borderRadius: '50%',
-                      p: 1.5,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      backgroundColor: `${metric.color}.main`,
+                      color: 'white',
+                      width: 48,
+                      height: 48,
                     }}
                   >
-                    {React.cloneElement(metric.icon, { sx: { color: `${metric.color}.main` } })}
-                  </Box>
+                    {metric.icon}
+                  </Avatar>
+                  {metric.trend !== 'neutral' && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {metric.trend === 'up' ? <TrendingUp color="success" /> : <TrendingDown color="error" />}
+                    </Box>
+                  )}
                 </Box>
+                <Typography variant="h4" sx={{ mb: 1 }}>
+                  {metric.value}
+                </Typography>
+                <Typography color="textSecondary" variant="overline" display="block">
+                  {metric.title}
+                </Typography>
+                {metric.change && (
+                  <Chip
+                    label={metric.change}
+                    color={metric.trend === 'up' ? 'success' : 'error'}
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                )}
+                {metric.description && (
+                  <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                    {metric.description}
+                  </Typography>
+                )}
               </CardContent>
             </Card>
           </Grid>
         ))}
-      </Grid>
 
-      <Grid container spacing={3}>
-        {/* Popular Items */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Most Popular Items
-              </Typography>
-              <Typography variant="body2" color="textSecondary" paragraph>
-                Based on orders in the last 30 days
-              </Typography>
-
-              <Box sx={{ mt: 2 }}>
-                {popularItems.map((item, index) => (
-                  <Box key={index} sx={{ mb: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="body2">{item.name}</Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {item.orders} orders
-                      </Typography>
+        {/* Employee-specific: Spending Breakdown */}
+        {!isAdminOrManager && (
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Spending Breakdown
+                </Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                  Your food preferences this month
+                </Typography>
+                {personalSpendingBreakdown.map((item, index) => (
+                  <Box key={index} sx={{ mb: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2">{item.category}</Typography>
+                      <Typography variant="body2">₹{item.amount}</Typography>
                     </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={item.percentage} 
-                      sx={{ height: 6, borderRadius: 3 }}
+                    <LinearProgress
+                      variant="determinate"
+                      value={item.percentage}
+                      sx={{ height: 8, borderRadius: 4 }}
                     />
+                    <Typography variant="caption" color="textSecondary">
+                      {item.percentage}% of total spending
+                    </Typography>
                   </Box>
                 ))}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
-        {/* Hourly Orders */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Orders by Hour (Today)
-              </Typography>
-              <Typography variant="body2" color="textSecondary" paragraph>
-                Peak hours and order distribution
-              </Typography>
-
-              <Box sx={{ mt: 2 }}>
-                {hourlyData.map((hour, index) => {
-                  const maxOrders = Math.max(...hourlyData.map(h => h.orders));
-                  const percentage = (hour.orders / maxOrders) * 100;
-                  
-                  return (
-                    <Box key={index} sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="body2">{hour.time}</Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          {hour.orders} orders
+        {/* Employee-specific: Recent Activity */}
+        {!isAdminOrManager && (
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Recent Orders
+                </Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                  Your last 5 orders
+                </Typography>
+                <List>
+                  {recentActivity.map((activity, index) => (
+                    <React.Fragment key={index}>
+                      <ListItem sx={{ px: 0 }}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: 'primary.main' }}>
+                            <LocalDining />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={activity.item}
+                          secondary={`${activity.vendor} • ${activity.date}`}
+                        />
+                        <Typography variant="subtitle2">
+                          ₹{activity.amount}
                         </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={percentage} 
-                        color="primary"
-                        sx={{ height: 6, borderRadius: 3 }}
-                      />
-                    </Box>
-                  );
-                })}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+                      </ListItem>
+                      {index < recentActivity.length - 1 && <Divider variant="inset" component="li" />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
-        {/* Summary Stats */}
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Quick Summary
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={3}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" color="primary">
-                      89%
-                    </Typography>
+        {/* Employee-specific: Monthly Summary */}
+        {!isAdminOrManager && (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Monthly Summary
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={3}>
+                    <Box sx={{ textAlign: 'center', p: 2 }}>
+                      <Avatar sx={{ bgcolor: 'primary.main', mx: 'auto', mb: 1 }}>
+                        <CalendarToday />
+                      </Avatar>
+                      <Typography variant="h6">23</Typography>
+                      <Typography variant="body2" color="textSecondary">Orders Placed</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Box sx={{ textAlign: 'center', p: 2 }}>
+                      <Avatar sx={{ bgcolor: 'success.main', mx: 'auto', mb: 1 }}>
+                        <AttachMoney />
+                      </Avatar>
+                      <Typography variant="h6">₹2,340</Typography>
+                      <Typography variant="body2" color="textSecondary">Total Spent</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Box sx={{ textAlign: 'center', p: 2 }}>
+                      <Avatar sx={{ bgcolor: 'warning.main', mx: 'auto', mb: 1 }}>
+                        <Favorite />
+                      </Avatar>
+                      <Typography variant="h6">3</Typography>
+                      <Typography variant="body2" color="textSecondary">Favorite Vendors</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Box sx={{ textAlign: 'center', p: 2 }}>
+                      <Avatar sx={{ bgcolor: 'info.main', mx: 'auto', mb: 1 }}>
+                        <Schedule />
+                      </Avatar>
+                      <Typography variant="h6">15 min</Typography>
+                      <Typography variant="body2" color="textSecondary">Avg Wait Time</Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
+        {/* Admin-specific: Detailed Business Analytics */}
+        {isAdminOrManager && (
+          <>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Revenue Trends
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
+                    Last 7 days performance
+                  </Typography>
+                  {/* Placeholder for chart */}
+                  <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.paper' }}>
                     <Typography variant="body2" color="textSecondary">
-                      Customer Satisfaction
+                      Revenue Chart Placeholder
                     </Typography>
                   </Box>
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" color="success.main">
-                      ₹18,450
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Today's Revenue
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" color="warning.main">
-                      45
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Active Menu Items
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={3}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" color="info.main">
-                      15 min
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Avg Prep Time
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Popular Items
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                    Top selling items today
+                  </Typography>
+                  <List>
+                    {[
+                      { item: 'Veg Thali', orders: 45, revenue: '₹5,400' },
+                      { item: 'Biryani', orders: 38, revenue: '₹5,700' },
+                      { item: 'Masala Dosa', orders: 32, revenue: '₹2,560' },
+                      { item: 'Paneer Roll', orders: 28, revenue: '₹2,520' },
+                    ].map((item, index) => (
+                      <ListItem key={index} sx={{ px: 0 }}>
+                        <ListItemText
+                          primary={item.item}
+                          secondary={`${item.orders} orders`}
+                        />
+                        <Typography variant="subtitle2">
+                          {item.revenue}
+                        </Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
+        )}
       </Grid>
     </Box>
   );
