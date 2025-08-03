@@ -61,6 +61,7 @@ const Dashboard: React.FC = () => {
       icon: <ShoppingCart />,
       color: 'primary',
       change: '+12%',
+      description: 'Compared to last month',
     },
     {
       title: 'Revenue',
@@ -68,6 +69,7 @@ const Dashboard: React.FC = () => {
       icon: <TrendingUp />,
       color: 'success',
       change: '+8%',
+      description: 'Monthly revenue',
     },
     {
       title: 'Active Users',
@@ -75,6 +77,7 @@ const Dashboard: React.FC = () => {
       icon: <Person />,
       color: 'info',
       change: '+15%',
+      description: 'Registered users',
     },
     {
       title: 'Menu Items',
@@ -82,6 +85,7 @@ const Dashboard: React.FC = () => {
       icon: <Restaurant />,
       color: 'warning',
       change: '+3%',
+      description: 'Available items',
     },
   ];
 
@@ -131,8 +135,6 @@ const Dashboard: React.FC = () => {
         return 'Welcome to Atomix Cafeteria';
     }
   };
-
-
 
   const renderEmployeeDashboard = () => (
     <>
@@ -414,22 +416,29 @@ const Dashboard: React.FC = () => {
       <Grid container spacing={3} sx={{ mb: 3 }}>
         {adminStats.map((stat, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card>
+            <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
+                  <Box sx={{ flex: 1 }}>
                     <Typography color="textSecondary" gutterBottom variant="overline">
                       {stat.title}
                     </Typography>
                     <Typography variant="h4">
                       {stat.value}
                     </Typography>
-                    <Chip
-                      label={stat.change}
-                      color={stat.color as any}
-                      size="small"
-                      sx={{ mt: 1 }}
-                    />
+                    {stat.change && (
+                      <Chip
+                        label={stat.change}
+                        color={stat.color as any}
+                        size="small"
+                        sx={{ mt: 1 }}
+                      />
+                    )}
+                    {stat.description && (
+                      <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                        {stat.description}
+                      </Typography>
+                    )}
                   </Box>
                   <Avatar
                     sx={{
@@ -495,7 +504,7 @@ const Dashboard: React.FC = () => {
               {user && (
                 <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+                    <Avatar sx={{ mr: 2, bgcolor: 'primary.main', width: 56, height: 56 }}>
                       {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                     </Avatar>
                     <Box>
@@ -523,6 +532,38 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
+
+        {/* Employee-specific: Recent Orders */}
+        {user?.role === 'EMPLOYEE' && (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Recent Orders
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Mock recent orders */}
+                  {[
+                    { id: 1, item: 'Veg Thali', vendor: 'North Indian Corner', time: '2 hours ago', amount: '₹120', status: 'Delivered' },
+                    { id: 2, item: 'Masala Dosa', vendor: 'South Indian Express', time: 'Yesterday', amount: '₹80', status: 'Delivered' },
+                    { id: 3, item: 'Paneer Roll', vendor: 'Street Food Hub', time: '2 days ago', amount: '₹90', status: 'Delivered' },
+                  ].map((order) => (
+                    <Box key={order.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                      <Box>
+                        <Typography variant="subtitle2">{order.item}</Typography>
+                        <Typography variant="body2" color="textSecondary">{order.vendor} • {order.time}</Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="subtitle2">{order.amount}</Typography>
+                        <Chip label={order.status} color="success" size="small" />
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
     </>
   );

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api/v1';
+const API_BASE_URL = '';
 
 // Payment interfaces matching backend DTOs
 export interface PaymentMethod {
@@ -247,4 +247,4 @@ class PaymentService {
   }
 }
 
-export const paymentService = new PaymentService(); 
+export const paymentService = new PaymentService();

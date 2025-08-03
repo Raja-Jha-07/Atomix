@@ -63,15 +63,45 @@ public class DataLoader implements CommandLineRunner {
             employee2.setIsActive(true);
             employee2.setEmailVerified(true);
 
+            User manager = new User();
+            manager.setEmail("manager@atomix.com");
+            manager.setPassword(passwordEncoder.encode("password123"));
+            manager.setFirstName("Manager");
+            manager.setLastName("Cafeteria");
+            manager.setRole(UserRole.CAFETERIA_MANAGER);
+            manager.setFloorId("ALL");
+            manager.setDepartment("Cafeteria");
+            manager.setEmployeeId("MGR001");
+            manager.setFoodCardBalance(500.0);
+            manager.setIsActive(true);
+            manager.setEmailVerified(true);
+
+            User vendor = new User();
+            vendor.setEmail("vendor@atomix.com");
+            vendor.setPassword(passwordEncoder.encode("password123"));
+            vendor.setFirstName("Vendor");
+            vendor.setLastName("Food");
+            vendor.setRole(UserRole.VENDOR);
+            vendor.setFloorId("F1");
+            vendor.setDepartment("Food Services");
+            vendor.setEmployeeId("VND001");
+            vendor.setFoodCardBalance(0.0);
+            vendor.setIsActive(true);
+            vendor.setEmailVerified(true);
+
             // Save users
             userRepository.save(admin);
             userRepository.save(employee1);
             userRepository.save(employee2);
+            userRepository.save(manager);
+            userRepository.save(vendor);
 
             System.out.println("✅ Sample data loaded successfully!");
             System.out.println("👤 Admin: admin@atomix.com / password123");
+            System.out.println("👤 Cafeteria Manager: manager@atomix.com / password123");
             System.out.println("👤 Employee 1: john.doe@atomix.com / password123");
             System.out.println("👤 Employee 2: jane.smith@atomix.com / password123");
+            System.out.println("👤 Vendor: vendor@atomix.com / password123");
         }
     }
 } 

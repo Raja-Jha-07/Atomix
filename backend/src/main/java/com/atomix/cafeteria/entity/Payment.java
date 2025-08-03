@@ -300,7 +300,7 @@ public class Payment {
     
     // Utility methods
     public boolean isSuccessful() {
-        return paymentStatus == PaymentStatus.PAID;
+        return paymentStatus == PaymentStatus.COMPLETED;
     }
     
     public boolean isFailed() {
@@ -308,11 +308,11 @@ public class Payment {
     }
     
     public boolean isPending() {
-        return paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.PROCESSING;
+        return paymentStatus == PaymentStatus.PENDING || paymentStatus == PaymentStatus.CREATED;
     }
     
     public boolean canBeRefunded() {
-        return paymentStatus == PaymentStatus.PAID && refundAmount.compareTo(amount) < 0;
+        return paymentStatus == PaymentStatus.COMPLETED && refundAmount.compareTo(amount) < 0;
     }
     
     public boolean isFoodCardTopup() {
@@ -322,4 +322,4 @@ public class Payment {
     public boolean isOrderPayment() {
         return paymentType == PaymentType.ORDER_PAYMENT;
     }
-} 
+}

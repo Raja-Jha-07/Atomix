@@ -134,7 +134,7 @@ public class PaymentService {
         // Convert amount to paise (Razorpay uses smallest currency unit)
         int amountInPaise = payment.getAmount().multiply(BigDecimal.valueOf(100)).intValue();
         
-        Map<String, Object> orderRequest = new HashMap<>();
+        org.json.JSONObject orderRequest = new org.json.JSONObject();
         orderRequest.put("amount", amountInPaise);
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", payment.getPaymentId());
@@ -206,11 +206,11 @@ public class PaymentService {
         userRepository.save(user);
         
         // Mark payment as successful
-        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setPaymentStatus(PaymentStatus.COMPLETED);
         payment.setProcessedAt(LocalDateTime.now());
         paymentRepository.save(payment);
         
-        response.setPaymentStatus(PaymentStatus.PAID);
+        response.setPaymentStatus(PaymentStatus.COMPLETED);
         response.setProcessedAt(payment.getProcessedAt());
         
         logger.info("Processed food card payment: {} for user: {}", payment.getPaymentId(), user.getId());
@@ -294,7 +294,7 @@ public class PaymentService {
     }
     
     private PaymentResponse processSuccessfulPayment(com.atomix.cafeteria.entity.Payment payment) {
-        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setPaymentStatus(PaymentStatus.COMPLETED);
         payment.setProcessedAt(LocalDateTime.now());
         
         // If this is a food card top-up, add amount to user's balance
