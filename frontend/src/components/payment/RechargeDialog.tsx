@@ -23,7 +23,7 @@ import {
   CreditCard,
 } from '@mui/icons-material';
 import { useAppSelector } from '../../hooks/redux';
-import paymentService from '../../services/paymentService';
+import { paymentService } from '../../services/paymentService';
 
 interface RechargeDialogProps {
   open: boolean;
@@ -84,21 +84,34 @@ const RechargeDialog: React.FC<RechargeDialogProps> = ({ open, onClose, onSucces
     setError(null);
 
     try {
-      const result = await paymentService.rechargeFoodCard(
-        selectedAmount,
-        {
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          contact: user.phoneNumber,
-        }
-      );
+      const result = await paymentService.topUpFoodCard({
+        amount: selectedAmount,
+        paymentMethod: 'RAZORPAY'
+      });
 
-      if (result.success) {
+      if (result.paymentStatus === 'COMPLETED') {
         onSuccess(selectedAmount);
         onClose();
         // Show success message
+      } else if (result.paymentStatus === 'PENDING') {
+        // Handle Razorpay payment flow
+        if (result.razorpayKeyId && result.gatewayOrderId) {
+          // Process Razorpay payment
+          await paymentService.processRazorpayPayment(
+            result,
+            (verifiedPayment) => {
+              onSuccess(selectedAmount);
+              onClose();
+            },
+            (error) => {
+              setError(error.message || 'Payment verification failed');
+            }
+          );
+        } else {
+          setError('Payment initialization failed');
+        }
       } else {
-        setError(result.error || 'Payment failed');
+        setError(result.failureReason || 'Payment failed');
       }
     } catch (error) {
       console.error('Recharge error:', error);
