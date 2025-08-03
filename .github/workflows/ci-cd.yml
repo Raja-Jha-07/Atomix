@@ -62,34 +62,6 @@ jobs:
       run:
         working-directory: ./backend
     
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: atomix_cafeteria_test
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-      
-      mongodb:
-        image: mongo:6
-        env:
-          MONGO_INITDB_ROOT_USERNAME: test
-          MONGO_INITDB_ROOT_PASSWORD: test123
-        options: >-
-          --health-cmd mongosh
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -101,14 +73,13 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
+    - name: Make Maven wrapper executable
+      run: chmod +x ./mvnw
+    
     - name: Run tests
       run: ./mvnw clean test
       env:
         SPRING_PROFILES_ACTIVE: test
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/atomix_cafeteria_test
-        SPRING_DATASOURCE_USERNAME: test_user
-        SPRING_DATASOURCE_PASSWORD: test_password
-        SPRING_DATA_MONGODB_URI: mongodb://test:test123@localhost:27017/atomix_cafeteria_test?authSource=admin
     
     - name: Generate test report
       uses: dorny/test-reporter@v1
