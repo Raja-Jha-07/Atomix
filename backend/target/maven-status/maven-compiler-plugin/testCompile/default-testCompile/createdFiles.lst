@@ -1,0 +1,4 @@
+com\atomix\cafeteria\controller\AuthControllerTest.class
+com\atomix\cafeteria\repository\UserRepositoryTest.class
+com\atomix\cafeteria\CafeteriaApplicationTests.class
+com\atomix\cafeteria\config\TestConfig.class
