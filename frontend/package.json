@@ -45,6 +45,11 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^3.1.0"
   },
+  "overrides": {
+    "nth-check": "^2.0.1",
+    "postcss": "^8.4.31",
+    "webpack-dev-server": "^5.2.1"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
