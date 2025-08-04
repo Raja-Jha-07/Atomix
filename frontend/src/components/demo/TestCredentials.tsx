@@ -28,7 +28,7 @@ interface TestUser {
 const testUsers: TestUser[] = [
   {
     email: 'admin@atomix.com',
-    password: 'admin123',
+    password: 'password123',
     role: 'ADMIN',
     description: 'Full system access, can manage all users and settings',
   },
@@ -40,13 +40,13 @@ const testUsers: TestUser[] = [
   },
   {
     email: 'vendor@atomix.com',
-    password: 'vendor123',
+    password: 'password123',
     role: 'VENDOR',
     description: 'Can manage their own menu items and view orders',
   },
   {
     email: 'employee@atomix.com',
-    password: 'employee123',
+    password: 'password123',
     role: 'EMPLOYEE',
     description: 'Can browse menu, place orders, view order history',
   },

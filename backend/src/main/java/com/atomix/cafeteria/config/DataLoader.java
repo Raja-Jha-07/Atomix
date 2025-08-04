@@ -65,7 +65,7 @@ public class DataLoader implements CommandLineRunner {
 
             User manager = new User();
             manager.setEmail("manager@atomix.com");
-            manager.setPassword(passwordEncoder.encode("password123"));
+            manager.setPassword(passwordEncoder.encode("manager123"));
             manager.setFirstName("Manager");
             manager.setLastName("Cafeteria");
             manager.setRole(UserRole.CAFETERIA_MANAGER);
@@ -98,7 +98,7 @@ public class DataLoader implements CommandLineRunner {
 
             System.out.println("✅ Sample data loaded successfully!");
             System.out.println("👤 Admin: admin@atomix.com / password123");
-            System.out.println("👤 Cafeteria Manager: manager@atomix.com / password123");
+            System.out.println("👤 Cafeteria Manager: manager@atomix.com / manager123");
             System.out.println("👤 Employee 1: john.doe@atomix.com / password123");
             System.out.println("👤 Employee 2: jane.smith@atomix.com / password123");
             System.out.println("👤 Vendor: vendor@atomix.com / password123");
