@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 //     MongoAutoConfiguration.class,
 //     SecurityAutoConfiguration.class
 // })
-@RestController
-@CrossOrigin(origins = "*")
+// @RestController
+// @CrossOrigin(origins = "*")
 public class SimpleApp {
 
     public static void main(String[] args) {
