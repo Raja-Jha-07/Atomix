@@ -8,6 +8,8 @@ export interface OrderItem {
   price: number;
   quantity: number;
   vendor: string;
+  image?: string;
+  description?: string;
 }
 
 export interface CreateOrderRequest {
