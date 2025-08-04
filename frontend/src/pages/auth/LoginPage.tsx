@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -48,14 +48,12 @@ const schema = yup.object().shape({
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useAppDispatch();
   const theme = useTheme();
   
   const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
   
-  const from = (location.state as any)?.from?.pathname || '/';
+
 
   const {
     register,
@@ -66,14 +64,13 @@ const LoginPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
-    }
-  }, [isAuthenticated, navigate, from]);
-
-  useEffect(() => {
     dispatch(clearError());
   }, [dispatch]);
+
+  // If already authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const onSubmit = async (data: LoginForm) => {
     dispatch(loginUser(data));
