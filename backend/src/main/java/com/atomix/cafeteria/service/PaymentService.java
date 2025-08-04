@@ -12,6 +12,7 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
+import org.json.JSONObject;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +135,7 @@ public class PaymentService {
         // Convert amount to paise (Razorpay uses smallest currency unit)
         int amountInPaise = payment.getAmount().multiply(BigDecimal.valueOf(100)).intValue();
         
-        org.json.JSONObject orderRequest = new org.json.JSONObject();
+        JSONObject orderRequest = new JSONObject();
         orderRequest.put("amount", amountInPaise);
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", payment.getPaymentId());

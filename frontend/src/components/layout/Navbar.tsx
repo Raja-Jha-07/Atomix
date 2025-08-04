@@ -23,13 +23,10 @@ import {
   Logout,
   Settings,
   Person,
-  Brightness4,
-  Brightness7,
   AccountBalanceWallet,
-  MoreVert,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { useLogoutMutation } from '../../store/api/authApi';
 import { logout } from '../../store/slices/authSlice';
 
@@ -60,7 +57,6 @@ const Navbar: React.FC = () => {
     try {
       await logoutMutation().unwrap();
     } catch (error) {
-      // Even if the server logout fails, we should still clear local state
       console.error('Server logout failed:', error);
     } finally {
       dispatch(logout());
@@ -125,7 +121,6 @@ const Navbar: React.FC = () => {
         }}
       >
         <Toolbar sx={{ minHeight: '70px !important', px: 3 }}>
-          {/* Logo and Title */}
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
             <Box
               sx={{
@@ -155,9 +150,7 @@ const Navbar: React.FC = () => {
             </Box>
           </Box>
 
-          {/* User Info & Controls */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* User Role Chip */}
             <Chip
               label={getRoleDisplayName(user?.role || '')}
               color={getRoleColor(user?.role || '') as any}
@@ -171,7 +164,6 @@ const Navbar: React.FC = () => {
               }}
             />
 
-            {/* Food Card Balance for Employees */}
             {user?.role === 'EMPLOYEE' && (
               <Tooltip title="Food Card Balance">
                 <Chip
@@ -192,7 +184,6 @@ const Navbar: React.FC = () => {
               </Tooltip>
             )}
 
-            {/* Notifications */}
             <Tooltip title="Notifications">
               <IconButton
                 color="inherit"
@@ -211,7 +202,6 @@ const Navbar: React.FC = () => {
               </IconButton>
             </Tooltip>
 
-            {/* User Menu */}
             <Tooltip title="Account menu">
               <IconButton
                 onClick={handleProfileMenuOpen}
@@ -240,7 +230,6 @@ const Navbar: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Notifications Menu */}
       <Menu
         anchorEl={notificationAnchor}
         open={Boolean(notificationAnchor)}
@@ -254,12 +243,6 @@ const Navbar: React.FC = () => {
             mt: 1.5,
             minWidth: 320,
             borderRadius: 2,
-            '& .MuiAvatar-root': {
-              width: 32,
-              height: 32,
-              ml: -0.5,
-              mr: 1,
-            },
             '&:before': {
               content: '""',
               display: 'block',
@@ -306,7 +289,6 @@ const Navbar: React.FC = () => {
         </MenuItem>
       </Menu>
 
-      {/* User Profile Menu */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -320,12 +302,6 @@ const Navbar: React.FC = () => {
             mt: 1.5,
             minWidth: 220,
             borderRadius: 2,
-            '& .MuiAvatar-root': {
-              width: 32,
-              height: 32,
-              ml: -0.5,
-              mr: 1,
-            },
             '&:before': {
               content: '""',
               display: 'block',
@@ -343,7 +319,6 @@ const Navbar: React.FC = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        {/* User Info Header */}
         <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="body1" sx={{ fontWeight: 600 }}>
             {user?.firstName} {user?.lastName}

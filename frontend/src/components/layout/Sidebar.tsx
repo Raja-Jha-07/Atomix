@@ -57,8 +57,15 @@ const navigationItems: NavigationItem[] = [
     requiredRoles: ['CAFETERIA_MANAGER'],
   },
   {
-    text: 'Vendor Portal',
+    text: 'Vendor',
     icon: <BusinessCenter />,
+    path: '/vendor-portal',
+    requiredRoles: ['ADMIN'],
+    badge: 3, // Pending vendor approvals for admins
+  },
+  {
+    text: 'My Business',
+    icon: <Store />,
     path: '/vendor-portal',
     requiredRoles: ['VENDOR'],
   },
@@ -171,7 +178,6 @@ const Sidebar: React.FC = () => {
         },
       }}
     >
-      {/* User Profile Section */}
       <Box 
         sx={{ 
           p: 3, 
@@ -225,7 +231,6 @@ const Sidebar: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Food Card Balance for Employees */}
         {user?.role === 'EMPLOYEE' && (
           <Box
             sx={{
@@ -269,7 +274,6 @@ const Sidebar: React.FC = () => {
         )}
       </Box>
 
-      {/* Navigation Menu */}
       <Box sx={{ flex: 1, py: 2 }}>
         <Typography 
           variant="caption" 
@@ -345,18 +349,21 @@ const Sidebar: React.FC = () => {
                     }}
                   />
                   
-                  {/* Badge */}
                   {item.badge && (
                     <Chip
-                      label={item.badge}
+                      label={item.path === '/vendor-portal' 
+                        ? `${item.badge} pending` 
+                        : item.badge}
                       size="small"
                       sx={{
                         height: 20,
                         fontSize: '0.7rem',
                         fontWeight: 600,
-                        backgroundColor: item.isNew 
-                          ? theme.palette.success.main 
-                          : theme.palette.error.main,
+                        backgroundColor: item.path === '/vendor-portal' 
+                          ? theme.palette.warning.main
+                          : item.isNew 
+                            ? theme.palette.success.main 
+                            : theme.palette.error.main,
                         color: 'white',
                         '& .MuiChip-label': {
                           px: 1,
@@ -371,7 +378,6 @@ const Sidebar: React.FC = () => {
         </List>
       </Box>
 
-      {/* Footer Section */}
       <Box 
         sx={{ 
           p: 3, 
