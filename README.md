@@ -91,7 +91,7 @@ npm start
 #### Backend (`backend/src/main/resources/application.yml`)
 ```yaml
 razorpay:
-  key-id: ${RAZORPAY_KEY_ID:rzp_test_HYaOsl8oUnHAtT}
+  key-id: ${RAZORPAY_KEY_ID:your-key}
   key-secret: ${RAZORPAY_KEY_SECRET:your-secret-key}
 
 jwt:
@@ -102,16 +102,7 @@ jwt:
 #### Frontend (`.env.local`)
 ```
 REACT_APP_API_URL=http://localhost:8083/api/v1
-REACT_APP_RAZORPAY_KEY_ID=rzp_test_HYaOsl8oUnHAtT
-```
-
-## 🔐 Default Credentials
-
-### Test Users
-```
-Admin: admin@atomix.com / adminpass123
-Employee: john.doe@atomix.com / johnpass123
-Employee: employee@test.com / userpass123
+REACT_APP_RAZORPAY_KEY_ID=your-key
 ```
 
 ## 💳 Payment Integration
