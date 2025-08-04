@@ -43,7 +43,7 @@ interface CartItem extends MenuItem {
   quantity: number;
 }
 
-const MenuPage: React.FC = () => {
+const EmployeeMenuPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -424,4 +424,4 @@ const MenuPage: React.FC = () => {
   );
 };
 
-export default MenuPage;
+export default EmployeeMenuPage;

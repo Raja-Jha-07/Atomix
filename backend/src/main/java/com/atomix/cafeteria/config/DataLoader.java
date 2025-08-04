@@ -39,7 +39,7 @@ public class DataLoader implements CommandLineRunner {
 
             User employee1 = new User();
             employee1.setEmail("john.doe@atomix.com");
-            employee1.setPassword(passwordEncoder.encode("password123"));
+            employee1.setPassword(passwordEncoder.encode("johnpass123"));
             employee1.setFirstName("John");
             employee1.setLastName("Doe");
             employee1.setRole(UserRole.EMPLOYEE);
@@ -99,7 +99,7 @@ public class DataLoader implements CommandLineRunner {
             System.out.println("✅ Sample data loaded successfully!");
             System.out.println("👤 Admin: admin@atomix.com / password123");
             System.out.println("👤 Cafeteria Manager: manager@atomix.com / password123");
-            System.out.println("👤 Employee 1: john.doe@atomix.com / password123");
+            System.out.println("👤 Employee 1: john.doe@atomix.com / johnpass123");
             System.out.println("👤 Employee 2: jane.smith@atomix.com / password123");
             System.out.println("👤 Vendor: vendor@atomix.com / password123");
         }

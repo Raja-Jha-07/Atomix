@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import VendorMenuManagement from '../components/VendorMenuManagement';
 import {
   Box,
   Typography,
@@ -720,58 +721,7 @@ const VendorPortal: React.FC = () => {
 
       {/* Menu Management Tab */}
       <TabPanel value={tabValue} index={1}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-          <Typography variant="h6">Menu Items</Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setAddMenuItemOpen(true)}
-          >
-            Add Item
-          </Button>
-        </Box>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Orders Today</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {menuItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>₹{item.price}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={item.status}
-                      color={item.status === 'Active' ? 'success' : 'default'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>{item.orders}</TableCell>
-                  <TableCell>
-                    <IconButton size="small">
-                      <Visibility />
-                    </IconButton>
-                    <IconButton size="small">
-                      <Edit />
-                    </IconButton>
-                    <IconButton size="small">
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <VendorMenuManagement />
       </TabPanel>
 
       {/* Orders Tab */}

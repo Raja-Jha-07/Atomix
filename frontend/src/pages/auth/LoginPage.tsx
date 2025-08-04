@@ -58,6 +58,7 @@ const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: yupResolver(schema),
@@ -285,9 +286,70 @@ const LoginPage: React.FC = () => {
                   <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
                     Welcome Back
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                     Sign in to access your cafeteria dashboard
                   </Typography>
+                  
+                  {/* Quick Login Buttons */}
+                  <Stack direction="row" spacing={1} sx={{ justifyContent: 'center', flexWrap: 'wrap', gap: 1 }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => {
+                        setValue('email', 'admin@atomix.com');
+                        setValue('password', 'adminpass123');
+                      }}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.75rem',
+                        py: 0.5,
+                        px: 1.5,
+                        borderRadius: 1,
+                        minWidth: 'auto',
+                      }}
+                    >
+                      🔧 Admin
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => {
+                        setValue('email', 'employee@atomix.com');
+                        setValue('password', 'password123');
+                      }}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.75rem',
+                        py: 0.5,
+                        px: 1.5,
+                        borderRadius: 1,
+                        minWidth: 'auto',
+                      }}
+                    >
+                      👨‍💼 Employee
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="success"
+                      onClick={() => {
+                        setValue('email', 'vendor@atomix.com');
+                        setValue('password', 'password123');
+                      }}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.75rem',
+                        py: 0.5,
+                        px: 1.5,
+                        borderRadius: 1,
+                        minWidth: 'auto',
+                      }}
+                    >
+                      🏪 Vendor
+                    </Button>
+                  </Stack>
                 </Box>
 
                 {/* Error Alert */}
@@ -306,40 +368,7 @@ const LoginPage: React.FC = () => {
                   </Alert>
                 )}
 
-                {/* Test Mock Auth Button */}
-                <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                  <Button 
-                    onClick={() => {
-                      console.log('🧪 Testing mock auth directly...');
-                      onSubmit({ email: 'admin@atomix.com', password: 'password123' });
-                    }}
-                    variant="outlined"
-                    size="small"
-                  >
-                    🧪 Test Admin
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      console.log('🧪 Testing employee auth...');
-                      onSubmit({ email: 'employee@atomix.com', password: 'password123' });
-                    }}
-                    variant="outlined"
-                    size="small"
-                  >
-                    👨‍💼 Test Employee
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      console.log('🧪 Testing invalid credentials...');
-                      onSubmit({ email: 'invalid@test.com', password: 'wrongpass' });
-                    }}
-                    variant="outlined"
-                    size="small"
-                    color="error"
-                  >
-                    ❌ Test Invalid
-                  </Button>
-                </Stack>
+
 
                 {/* Login Form */}
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -473,6 +502,81 @@ const LoginPage: React.FC = () => {
                     </Button>
                   </Stack>
 
+                  {/* Test Login Buttons */}
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.info.main, mb: 1, display: 'block' }}>
+                      Quick Test Login
+                    </Typography>
+                    <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => {
+                          setValue('email', 'john.doe@atomix.com');
+                          setValue('password', 'johnpass123');
+                        }}
+                        sx={{
+                          textTransform: 'none',
+                          fontSize: '0.75rem',
+                          py: 0.5,
+                          px: 1.5,
+                          borderColor: alpha(theme.palette.success.main, 0.3),
+                          color: theme.palette.success.main,
+                          '&:hover': {
+                            borderColor: theme.palette.success.main,
+                            background: alpha(theme.palette.success.main, 0.04),
+                          },
+                        }}
+                      >
+                        Employee
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => {
+                          setValue('email', 'admin@atomix.com');
+                          setValue('password', 'password123');
+                        }}
+                        sx={{
+                          textTransform: 'none',
+                          fontSize: '0.75rem',
+                          py: 0.5,
+                          px: 1.5,
+                          borderColor: alpha(theme.palette.warning.main, 0.3),
+                          color: theme.palette.warning.main,
+                          '&:hover': {
+                            borderColor: theme.palette.warning.main,
+                            background: alpha(theme.palette.warning.main, 0.04),
+                          },
+                        }}
+                      >
+                        Admin
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => {
+                          setValue('email', 'vendor@atomix.com');
+                          setValue('password', 'password123');
+                        }}
+                        sx={{
+                          textTransform: 'none',
+                          fontSize: '0.75rem',
+                          py: 0.5,
+                          px: 1.5,
+                          borderColor: alpha(theme.palette.info.main, 0.3),
+                          color: theme.palette.info.main,
+                          '&:hover': {
+                            borderColor: theme.palette.info.main,
+                            background: alpha(theme.palette.info.main, 0.04),
+                          },
+                        }}
+                      >
+                        Vendor
+                      </Button>
+                    </Stack>
+                  </Box>
+
                   {/* Register Link */}
                   <Box sx={{ textAlign: 'center', mt: 4 }}>
                     <Typography variant="body2" color="text.secondary">
@@ -510,7 +614,10 @@ const LoginPage: React.FC = () => {
                 Admin: admin@atomix.com / password123
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                Employee: john.doe@company.com / password123
+                Employee: john.doe@atomix.com / johnpass123
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                Vendor: vendor@atomix.com / password123
               </Typography>
             </Paper>
           </Box>
