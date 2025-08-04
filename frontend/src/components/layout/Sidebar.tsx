@@ -172,9 +172,11 @@ const Sidebar: React.FC = () => {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+          bgcolor: 'background.paper',
           borderRight: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-          boxShadow: '4px 0 20px rgba(0, 0, 0, 0.05)',
+          boxShadow: theme.palette.mode === 'dark' 
+            ? '4px 0 20px rgba(0, 0, 0, 0.3)' 
+            : '4px 0 20px rgba(0, 0, 0, 0.05)',
         },
       }}
     >
