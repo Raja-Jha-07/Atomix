@@ -191,7 +191,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.atomix.simple.SimpleApplication</mainClass>
+                    <mainClass>com.atomix.cafeteria.CafeteriaApplication</mainClass>
                     <excludes>
                         <exclude>
                             <groupId>org.springframework.boot</groupId>

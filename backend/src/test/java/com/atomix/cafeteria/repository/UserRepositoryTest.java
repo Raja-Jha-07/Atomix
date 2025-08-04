@@ -26,10 +26,12 @@ class UserRepositoryTest {
         user.setEmail("test@example.com");
         user.setFirstName("Test");
         user.setLastName("User");
-        user.setPassword("hashedpassword");
+        user.setPassword("hashedpassword123"); // Ensure password meets minimum length requirement
         user.setRole(UserRole.EMPLOYEE);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setIsActive(true);
+        user.setEmailVerified(false);
+        user.setFoodCardBalance(0.0);
+        // Note: createdAt and updatedAt are automatically set by @CreatedDate and @LastModifiedDate
         
         userRepository.save(user);
 

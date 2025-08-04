@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password: 
     driver-class-name: org.h2.Driver
@@ -13,6 +13,7 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
     show-sql: false
+    defer-datasource-initialization: true
   
   h2:
     console:
@@ -20,6 +21,10 @@ spring:
   
   flyway:
     enabled: false
+  
+  sql:
+    init:
+      mode: never
   
   security:
     oauth2:
@@ -41,4 +46,16 @@ logging:
 
 jwt:
   secret: testSecretKeyForJWTThatIsLongEnoughForHMAC256Algorithm
-  expiration: 86400000 
+  expiration: 86400000
+
+# Disable external services for testing
+app:
+  cors:
+    allowed-origins: "*"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    enabled-by-default: false 
