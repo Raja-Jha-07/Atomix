@@ -16,9 +16,10 @@ import {
   AccountCircle,
   Logout,
   Settings,
+  ShoppingCart,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { useLogoutMutation } from '../../store/api/authApi';
 import { logout } from '../../store/slices/authSlice';
 
@@ -27,6 +28,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const { currentOrder } = useAppSelector((state) => state.order);
   
   const [logoutMutation] = useLogoutMutation();
 
@@ -61,12 +63,19 @@ const Navbar: React.FC = () => {
     handleMenuClose();
   };
 
+  const handleCartClick = () => {
+    navigate('/cart');
+  };
+
   const isMenuOpen = Boolean(anchorEl);
 
   const getUserInitials = () => {
     if (!user) return '';
     return `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase();
   };
+
+  // Calculate total items in cart
+  const cartItemsCount = currentOrder.reduce((total, item) => total + item.quantity, 0);
 
   const renderMenu = (
     <Menu
@@ -117,6 +126,15 @@ const Navbar: React.FC = () => {
                 </Typography>
               </Box>
             )}
+
+            {/* Cart Icon */}
+            <Tooltip title="View Cart">
+              <IconButton color="inherit" onClick={handleCartClick}>
+                <Badge badgeContent={cartItemsCount} color="error">
+                  <ShoppingCart />
+                </Badge>
+              </IconButton>
+            </Tooltip>
 
             <Tooltip title="Notifications">
               <IconButton color="inherit">

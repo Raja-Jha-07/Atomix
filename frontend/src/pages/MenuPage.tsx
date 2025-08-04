@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -8,11 +8,33 @@ import {
   Button,
   Grid,
   Chip,
+  IconButton,
+  Badge,
+  Snackbar,
+  Alert,
 } from '@mui/material';
-import { Add, Restaurant } from '@mui/icons-material';
+import { Add, Restaurant, Remove } from '@mui/icons-material';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { addToCart, updateQuantity, removeFromCart } from '../store/slices/orderSlice';
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  isAvailable: boolean;
+  prepTime: number;
+}
 
 const MenuPage: React.FC = () => {
-  const menuItems = [
+  const dispatch = useAppDispatch();
+  const { currentOrder } = useAppSelector((state) => state.order);
+  const [showAddedToCart, setShowAddedToCart] = useState(false);
+  const [addedItemName, setAddedItemName] = useState('');
+
+  const menuItems: MenuItem[] = [
     {
       id: '1',
       name: 'Chicken Biryani',
@@ -53,7 +75,94 @@ const MenuPage: React.FC = () => {
       isAvailable: true,
       prepTime: 5,
     },
+    {
+      id: '5',
+      name: 'Masala Dosa',
+      description: 'Crispy rice crepe with spiced potato filling',
+      price: 120,
+      category: 'South Indian',
+      imageUrl: '/api/placeholder/300/200',
+      isAvailable: true,
+      prepTime: 20,
+    },
+    {
+      id: '6',
+      name: 'Chole Bhature',
+      description: 'Spicy chickpea curry with fried bread',
+      price: 160,
+      category: 'North Indian',
+      imageUrl: '/api/placeholder/300/200',
+      isAvailable: false,
+      prepTime: 15,
+    },
   ];
+
+  const handleAddToCart = (item: MenuItem) => {
+    const orderItem = {
+      id: `${item.id}_${Date.now()}`,
+      menuItemId: item.id,
+      name: item.name,
+      quantity: 1,
+      price: item.price,
+    };
+
+    dispatch(addToCart(orderItem));
+    setAddedItemName(item.name);
+    setShowAddedToCart(true);
+  };
+
+  const handleUpdateQuantity = (menuItemId: string, newQuantity: number) => {
+    if (newQuantity === 0) {
+      dispatch(removeFromCart(menuItemId));
+    } else {
+      dispatch(updateQuantity({ menuItemId, quantity: newQuantity }));
+    }
+  };
+
+  const getItemQuantityInCart = (menuItemId: string) => {
+    const cartItem = currentOrder.find(item => item.menuItemId === menuItemId);
+    return cartItem ? cartItem.quantity : 0;
+  };
+
+  const renderQuantityControls = (item: MenuItem) => {
+    const quantity = getItemQuantityInCart(item.id);
+    
+    if (quantity === 0) {
+      return (
+        <Button
+          variant="contained"
+          fullWidth
+          startIcon={<Add />}
+          disabled={!item.isAvailable}
+          onClick={() => handleAddToCart(item)}
+        >
+          Add to Cart
+        </Button>
+      );
+    }
+
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <IconButton
+          size="small"
+          onClick={() => handleUpdateQuantity(item.id, quantity - 1)}
+          sx={{ bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
+        >
+          <Remove />
+        </IconButton>
+        <Typography variant="h6" sx={{ minWidth: 30, textAlign: 'center' }}>
+          {quantity}
+        </Typography>
+        <IconButton
+          size="small"
+          onClick={() => handleUpdateQuantity(item.id, quantity + 1)}
+          sx={{ bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }}
+        >
+          <Add />
+        </IconButton>
+      </Box>
+    );
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -69,7 +178,31 @@ const MenuPage: React.FC = () => {
       <Grid container spacing={3}>
         {menuItems.map((item) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Card sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              position: 'relative',
+              '&:hover': { transform: 'translateY(-2px)', transition: 'transform 0.2s' }
+            }}>
+              {getItemQuantityInCart(item.id) > 0 && (
+                <Badge
+                  badgeContent={getItemQuantityInCart(item.id)}
+                  color="primary"
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    zIndex: 1,
+                    '& .MuiBadge-badge': {
+                      bgcolor: 'success.main',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                    }
+                  }}
+                />
+              )}
+              
               <CardMedia
                 component="div"
                 sx={{
@@ -93,14 +226,14 @@ const MenuPage: React.FC = () => {
                   </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                   <Chip label={item.category} size="small" color="primary" variant="outlined" />
                   <Chip label={`${item.prepTime} min`} size="small" color="default" />
                 </Box>
 
                 <Box sx={{ mt: 'auto' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" color="primary">
+                    <Typography variant="h6" color="primary" fontWeight="bold">
                       ₹{item.price}
                     </Typography>
                     <Chip 
@@ -110,14 +243,7 @@ const MenuPage: React.FC = () => {
                     />
                   </Box>
                   
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    startIcon={<Add />}
-                    disabled={!item.isAvailable}
-                  >
-                    Add to Cart
-                  </Button>
+                  {renderQuantityControls(item)}
                 </Box>
               </CardContent>
             </Card>
@@ -136,6 +262,17 @@ const MenuPage: React.FC = () => {
           </Typography>
         </Box>
       )}
+
+      <Snackbar
+        open={showAddedToCart}
+        autoHideDuration={2000}
+        onClose={() => setShowAddedToCart(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowAddedToCart(false)} severity="success">
+          {addedItemName} added to cart!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

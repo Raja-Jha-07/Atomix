@@ -19,6 +19,7 @@ import {
   Person,
   Settings,
   Payment,
+  LocalMall,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
@@ -42,6 +43,11 @@ const navigationItems: NavigationItem[] = [
     text: 'Menu',
     icon: <Restaurant />,
     path: '/menu',
+  },
+  {
+    text: 'Cart',
+    icon: <LocalMall />,
+    path: '/cart',
   },
   {
     text: 'Orders',
@@ -83,7 +89,10 @@ const userItems: NavigationItem[] = [
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, currentOrder } = useAppSelector((state) => ({ 
+    user: state.auth.user, 
+    currentOrder: state.order.currentOrder 
+  }));
 
   const hasRequiredRole = (requiredRoles?: string[]) => {
     if (!requiredRoles || !user) return true;
@@ -100,6 +109,9 @@ const Sidebar: React.FC = () => {
   const handleNavigation = (path: string) => {
     navigate(path);
   };
+
+  // Calculate cart items count for badge
+  const cartItemsCount = currentOrder.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <Drawer
@@ -120,7 +132,7 @@ const Sidebar: React.FC = () => {
           Navigation
         </Typography>
       </Box>
-      
+
       <Divider />
       
       <List>
@@ -132,13 +144,40 @@ const Sidebar: React.FC = () => {
                 selected={isActive(item.path)}
                 onClick={() => handleNavigation(item.path)}
               >
-                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemIcon>
+                  {item.text === 'Cart' && cartItemsCount > 0 ? (
+                    <Box sx={{ position: 'relative' }}>
+                      {item.icon}
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          bgcolor: 'error.main',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: 16,
+                          height: 16,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {cartItemsCount > 9 ? '9+' : cartItemsCount}
+                      </Box>
+                    </Box>
+                  ) : (
+                    item.icon
+                  )}
+                </ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItemButton>
             </ListItem>
           ))}
       </List>
-      
+
       <Divider sx={{ mt: 'auto' }} />
       
       <List>

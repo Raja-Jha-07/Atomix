@@ -10,6 +10,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import VendorPortal from './pages/VendorPortal';
 import ProfilePage from './pages/ProfilePage';
 import PaymentPage from './pages/PaymentPage';
+import CartPage from './pages/CartPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -41,6 +42,11 @@ const App: React.FC = () => {
             <Route path="/menu" element={
               <ProtectedRoute>
                 <MenuPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/cart" element={
+              <ProtectedRoute>
+                <CartPage />
               </ProtectedRoute>
             } />
             <Route path="/orders" element={
