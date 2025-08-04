@@ -1,157 +1,223 @@
-# Atomix - Cafeteria Management System
+# Atomix Cafeteria Management System
 
-A comprehensive full-stack cafeteria management system built using modern web technologies and SDLC principles.
+A comprehensive cafeteria management system built with Spring Boot backend and React frontend, featuring role-based access control, food ordering, and integrated payment processing.
 
-## 🏗️ System Architecture
+## 🚀 Features
 
-### Technology Stack
-- **Frontend**: React 18 + TypeScript + Redux Toolkit
-- **Backend**: Spring Boot 3.2 + Java 21
-- **Databases**: PostgreSQL (structured data) + MongoDB (unstructured data)
-- **Authentication**: JWT + OAuth2
-- **Real-time**: WebSockets + Firebase
-- **Payment**: Razorpay/Stripe integration
-- **DevOps**: Docker + GitHub Actions
-- **Deployment**: Vercel (Frontend) + Render (Backend)
+### User Management
+- **Multi-role Authentication**: Admin, Manager, Vendor, Employee roles
+- **JWT-based Security**: Secure authentication and authorization
+- **User Profiles**: Complete profile management with personal statistics
 
-## 📋 Features
+### Food Ordering System
+- **Interactive Menu**: Search, filter, and browse food items
+- **Smart Cart**: Add/remove items with quantity management
+- **Real-time Updates**: Live menu updates and availability status
+- **Favorites System**: Save and quick-order favorite items
 
-### Functional Requirements
-- **Floor Mapping**: Link building floors to cafeteria menus with pricing
-- **Crowd Tracking**: Estimate rush hours by tracking people per floor
-- **Digital Payments**: Integrated payment gateway (Razorpay/Stripe)
-- **Menu Scheduling**: Time-based menu visibility
-- **Live Status**: Real-time cafeteria open/closed status
-- **Vendor Management**: Restaurant signup and menu control
-- **Menu Voting**: Employee voting system for preferred dishes
-- **Music Control**: Floor-wise music playbook management
-- **Pre-order & Pickup**: Schedule orders and pickup slots
-- **Feedback System**: AI-powered bot for suggestions and complaints
-- **Nutrition Info**: Display calories, proteins, fats, carbs
-- **Food Cards**: Digital food cards for employees
-- **Inventory Tracking**: Monitor ingredient stock levels
-- **Occasional Food Stalls**: Temporary vendor onboarding
-- **Dual Portals**: Vendor Portal and Employee Portal
+### Payment Integration 💳
+- **Razorpay Gateway**: Secure payment processing
+- **Food Card System**: Digital wallet for employees
+- **Multiple Payment Options**: Card recharge and direct order payment
+- **Payment History**: Complete transaction tracking
+- **Auto-recharge**: Configurable automatic balance top-up
 
-### Non-Functional Requirements
-- **Scalability**: Modular microservices architecture
-- **Security**: JWT authentication + OAuth2 integration
-- **Responsive UI**: Mobile-first design approach
-- **Real-time Updates**: WebSocket connections
-- **High Availability**: Failover and backup strategies
+### Analytics & Insights
+- **Personal Analytics**: Individual spending insights for employees
+- **Business Analytics**: Revenue and operational metrics for admins
+- **Order Tracking**: Real-time order status and history
+- **Spending Breakdown**: Detailed expense categorization
 
-## 🏢 Project Structure
+### Role-Based Features
 
-```
-atomix/
-├── docs/                           # Project documentation
-│   ├── requirements/               # Requirement specifications
-│   ├── design/                    # System design documents
-│   ├── api/                       # API documentation
-│   └── deployment/                # Deployment guides
-├── frontend/                      # React application
-│   ├── src/
-│   │   ├── components/            # Reusable UI components
-│   │   ├── pages/                 # Page components
-│   │   ├── store/                 # Redux store configuration
-│   │   ├── services/              # API service calls
-│   │   ├── hooks/                 # Custom React hooks
-│   │   └── utils/                 # Utility functions
-│   ├── public/                    # Static assets
-│   └── package.json
-├── backend/                       # Spring Boot application
-│   ├── src/main/java/com/atomix/
-│   │   ├── cafeteria/
-│   │   │   ├── config/            # Configuration classes
-│   │   │   ├── controller/        # REST controllers
-│   │   │   ├── service/           # Business logic services
-│   │   │   ├── repository/        # Data access layer
-│   │   │   ├── entity/            # JPA entities
-│   │   │   ├── dto/               # Data Transfer Objects
-│   │   │   ├── security/          # Security configurations
-│   │   │   └── websocket/         # WebSocket handlers
-│   │   └── CafeteriaApplication.java
-│   ├── src/main/resources/
-│   │   ├── application.yml        # Application configuration
-│   │   └── db/migration/          # Flyway migrations
-│   └── pom.xml
-├── docker/                        # Docker configurations
-│   ├── Dockerfile.frontend
-│   ├── Dockerfile.backend
-│   └── docker-compose.yml
-├── .github/                       # GitHub Actions workflows
-│   └── workflows/
-│       ├── ci-frontend.yml
-│       ├── ci-backend.yml
-│       └── deploy.yml
-└── scripts/                       # Build and deployment scripts
-```
+#### 👨‍💼 Employee Features
+- Browse and order from menu
+- Food card management and recharge
+- Personal spending analytics
+- Order history and favorites
+- Profile management
 
-## 🎯 Core Modules
+#### 🏪 Vendor Features
+- Menu management
+- Order tracking
+- Sales analytics
+- Inventory updates
 
-1. **User Management**: Employee and vendor registration, profiles
-2. **Menu Management**: Menu creation, scheduling, pricing
-3. **Voting System**: Democratic menu selection
-4. **Analytics**: Crowd tracking, sales analytics
-5. **Payment Processing**: Digital payments and food cards
-6. **Live Status**: Real-time cafeteria status updates
-7. **Music Control**: Floor-wise music management
-8. **Inventory Management**: Stock tracking and alerts
-9. **Feedback System**: AI-powered complaint handling
-10. **Vendor Portal**: Restaurant onboarding and management
-11. **Pre-order System**: Advance ordering and pickup slots
-12. **Nutrition Tracking**: Nutritional information display
+#### 👑 Admin/Manager Features
+- User management
+- Business analytics
+- System configuration
+- Payment oversight
 
-## 👥 Team Structure
+## 🛠️ Technology Stack
 
-- **Project Manager**: Overall project coordination
-- **Frontend Lead**: React development and UI/UX implementation
-- **Backend Lead**: Spring Boot APIs and business logic
-- **DevOps Engineer**: CI/CD, containerization, deployment
-- **UI/UX Designer**: User interface and experience design
-- **QA Tester**: Quality assurance and testing
+### Backend
+- **Framework**: Spring Boot 3.3.5
+- **Database**: H2 (development), PostgreSQL (production)
+- **Security**: Spring Security with JWT
+- **Payment**: Razorpay Java SDK
+- **Documentation**: OpenAPI/Swagger
 
-## 🚀 Getting Started
+### Frontend
+- **Framework**: React 18 with TypeScript
+- **UI Library**: Material-UI (MUI)
+- **State Management**: Redux Toolkit
+- **Payment**: Razorpay Checkout
+- **Build Tool**: Create React App
+
+## 📦 Installation & Setup
 
 ### Prerequisites
-- Node.js 18+
 - Java 21+
-- PostgreSQL 15+
-- MongoDB 6+
-- Docker (optional)
+- Node.js 18+
+- Maven 3.8+
 
-### Quick Start
-1. Clone the repository
-2. Follow setup instructions in respective directories
-3. Run development servers
-4. Access the application
+### Backend Setup
+```bash
+cd backend
+./mvnw clean install
+./mvnw spring-boot:run
+```
 
-## 📚 Documentation
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm start
+```
 
-- [Requirements Specification](docs/requirements/)
-- [System Design](docs/design/)
-- [API Documentation](docs/api/)
-- [Deployment Guide](docs/deployment/)
+### Environment Configuration
 
-## 🔧 Development
+#### Backend (`backend/src/main/resources/application.yml`)
+```yaml
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:rzp_test_HYaOsl8oUnHAtT}
+  key-secret: ${RAZORPAY_KEY_SECRET:your-secret-key}
 
-### Coding Standards
-- **Frontend**: ESLint + Prettier, TypeScript strict mode
-- **Backend**: Java coding standards, SOLID principles
-- **Testing**: Unit tests with high coverage
-- **Documentation**: Comprehensive API docs with Swagger
+jwt:
+  secret: ${JWT_SECRET:your-secret-key}
+  expiration: 86400000
+```
 
-### Naming Conventions
-- **Frontend Components**: `FloorMenuCard`, `LiveStatusBanner`, `MusicControlPanel`
-- **Backend Packages**: `com.atomix.cafeteria.menu`, `com.atomix.cafeteria.user`
-- **API Endpoints**: RESTful conventions (`/api/v1/menu`, `/api/v1/users`)
+#### Frontend (`.env.local`)
+```
+REACT_APP_API_URL=http://localhost:8083/api/v1
+REACT_APP_RAZORPAY_KEY_ID=rzp_test_HYaOsl8oUnHAtT
+```
+
+## 🔐 Default Credentials
+
+### Test Users
+```
+Admin: admin@atomix.com / adminpass123
+Employee: john.doe@atomix.com / johnpass123
+Employee: employee@test.com / userpass123
+```
+
+## 💳 Payment Integration
+
+### Razorpay Setup
+1. Create a Razorpay account at [razorpay.com](https://razorpay.com)
+2. Get your Test API Keys from the dashboard
+3. Update environment variables with your keys
+4. Test payments using Razorpay test cards
+
+### Test Payment Cards
+```
+Card Number: 4111 1111 1111 1111
+Expiry: Any future date
+CVV: Any 3 digits
+```
+
+### Payment Features
+- **Food Card Recharge**: ₹10 to ₹50,000
+- **Order Payments**: Direct payment for orders
+- **Auto-recharge**: Configurable thresholds
+- **Payment History**: Complete transaction logs
+- **Secure Processing**: SSL encryption and signature verification
+
+## 🏗️ Architecture
+
+### Security Flow
+1. User authentication via JWT
+2. Role-based route protection
+3. API endpoint authorization
+4. Payment signature verification
+
+### Payment Flow
+1. Frontend initiates payment
+2. Backend creates Razorpay order
+3. Razorpay checkout opens
+4. Payment completion verification
+5. Balance update and confirmation
+
+## 📱 API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/login` - User login
+- `POST /api/v1/auth/register` - User registration
+
+### Payments
+- `POST /api/v1/payments/create-order` - Create payment order
+- `POST /api/v1/payments/verify` - Verify payment
+- `GET /api/v1/payments/history` - Payment history
+
+### Menu & Orders
+- `GET /api/v1/menu/items` - Get menu items
+- `POST /api/v1/orders` - Place order
+- `GET /api/v1/orders/history` - Order history
+
+## 🚢 Deployment
+
+### H2 Database (Development)
+- Configured for file-based persistence
+- Web console available at `/h2-console`
+
+### Production Deployment
+- PostgreSQL database support
+- Docker containerization
+- Environment variable configuration
+- SSL/TLS security
+
+## 🧪 Testing
+
+### Backend Tests
+```bash
+cd backend
+./mvnw test
+```
+
+### Frontend Tests
+```bash
+cd frontend
+npm test
+```
+
+### Payment Testing
+- Use Razorpay test mode
+- Test with provided test cards
+- Verify webhook endpoints
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🤝 Contributing
 
-Please read our contributing guidelines and code of conduct before submitting pull requests.
+1. Fork the repository
+2. Create feature branch
+3. Commit changes
+4. Push to branch
+5. Create Pull Request
+
+## 📞 Support
+
+For support and questions:
+- Create an issue on GitHub
+- Contact: support@atomix.com
+
+---
+
+**Built with ❤️ for modern cafeteria management**
 
 

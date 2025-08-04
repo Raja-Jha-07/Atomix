@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api/v1';
+const API_BASE_URL = '';
 
 // Payment interfaces matching backend DTOs
 export interface PaymentMethod {
@@ -21,12 +21,11 @@ export interface PaymentType {
 }
 
 export interface PaymentStatus {
+  CREATED: 'CREATED';
   PENDING: 'PENDING';
-  PROCESSING: 'PROCESSING';
-  PAID: 'PAID';
+  COMPLETED: 'COMPLETED';
   FAILED: 'FAILED';
-  REFUNDED: 'REFUNDED';
-  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED';
+  CANCELLED: 'CANCELLED';
 }
 
 export interface PaymentRequest {
@@ -247,4 +246,4 @@ class PaymentService {
   }
 }
 
-export const paymentService = new PaymentService(); 
+export const paymentService = new PaymentService();

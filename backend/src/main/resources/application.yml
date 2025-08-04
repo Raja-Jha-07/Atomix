@@ -187,3 +187,14 @@ logging:
     com.atomix.cafeteria: WARN
     org.springframework.security: WARN
     org.hibernate.SQL: WARN 
+
+# Razorpay configuration
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID:rzp_test_HYaOsl8oUnHAtT}
+  key-secret: ${RAZORPAY_KEY_SECRET:N2rvYXLJyjhBGPb4uUmsq3gg}
+  webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:your-webhook-secret}
+
+# JWT configuration
+jwt:
+  secret: ${JWT_SECRET:mySecretKey}
+  expiration: 86400000 # 24 hours 

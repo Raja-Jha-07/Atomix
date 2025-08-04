@@ -41,6 +41,12 @@ public class ApiResponse<T> {
         return new ApiResponse<>(false, message, data);
     }
 
+    public ApiResponse(Boolean success, String message, T data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+    }
+
     // Getters and Setters
     public Boolean getSuccess() {
         return success;
@@ -57,11 +63,11 @@ public class ApiResponse<T> {
     public void setMessage(String message) {
         this.message = message;
     }
-    
+
     public T getData() {
         return data;
     }
-    
+
     public void setData(T data) {
         this.data = data;
     }

@@ -339,6 +339,6 @@ public class Order {
     }
     
     public boolean isPaid() {
-        return paymentStatus == PaymentStatus.PAID;
+        return paymentStatus == PaymentStatus.COMPLETED;
     }
 } 

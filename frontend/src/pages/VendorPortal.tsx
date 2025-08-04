@@ -1,34 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  Tabs,
-  Tab,
+  Grid,
   Card,
   CardContent,
-  Grid,
-  Paper,
-  Chip,
   Button,
-  Alert,
-  CircularProgress,
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Chip,
+  LinearProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Divider,
   IconButton,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
-  Store as StoreIcon,
-  Pending as PendingIcon,
-  CheckCircle as ApprovedIcon,
-  Block as SuspendedIcon,
-  Analytics as AnalyticsIcon,
-  Close as CloseIcon,
-  Add as AddIcon,
+  Restaurant,
+  TrendingUp,
+  ShoppingCart,
+  AttachMoney,
+  People,
+  Add,
+  Edit,
+  Delete,
+  Visibility,
+  Schedule,
+  Star,
+  CheckCircle,
+  Pending,
+  Cancel,
+  Notifications,
 } from '@mui/icons-material';
-import { VendorList, VendorForm } from '../components/vendor';
-import vendorService, { VendorResponse } from '../services/vendorService';
-import { useAppSelector } from '../hooks/redux';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,300 +69,395 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={`vendor-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
 }
 
 const VendorPortal: React.FC = () => {
-  const { user } = useAppSelector((state) => state.auth);
-  const [activeTab, setActiveTab] = useState(0);
-  const [statistics, setStatistics] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [formDialog, setFormDialog] = useState(false);
-  const [editingVendor, setEditingVendor] = useState<VendorResponse | undefined>(undefined);
+  const [tabValue, setTabValue] = useState(0);
+  const [addMenuItemOpen, setAddMenuItemOpen] = useState(false);
 
-  const isAdmin = user?.role === 'ADMIN';
-  const isManager = user?.role === 'CAFETERIA_MANAGER';
-  const isVendor = user?.role === 'VENDOR';
-  
-  const hasManagementAccess = isAdmin || isManager;
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
-  useEffect(() => {
-    loadStatistics();
-  }, []);
+  // Mock vendor stats
+  const vendorStats = [
+    {
+      title: 'Today\'s Revenue',
+      value: '₹3,240',
+      change: '+12%',
+      icon: <AttachMoney />,
+      color: 'success',
+    },
+    {
+      title: 'Active Orders',
+      value: '8',
+      change: '+3',
+      icon: <ShoppingCart />,
+      color: 'primary',
+    },
+    {
+      title: 'Menu Items',
+      value: '24',
+      change: '+2',
+      icon: <Restaurant />,
+      color: 'info',
+    },
+    {
+      title: 'Customer Rating',
+      value: '4.8',
+      change: '+0.2',
+      icon: <Star />,
+      color: 'warning',
+    },
+  ];
 
-  const loadStatistics = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      if (hasManagementAccess) {
-        const stats = await vendorService.getVendorStatistics();
-        setStatistics(stats);
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  // Mock menu items
+  const menuItems = [
+    { id: 1, name: 'Veg Thali', price: 120, category: 'Main Course', status: 'Active', orders: 23 },
+    { id: 2, name: 'Paneer Butter Masala', price: 150, category: 'Main Course', status: 'Active', orders: 18 },
+    { id: 3, name: 'Masala Dosa', price: 80, category: 'South Indian', status: 'Active', orders: 31 },
+    { id: 4, name: 'Filter Coffee', price: 25, category: 'Beverages', status: 'Inactive', orders: 0 },
+  ];
+
+  // Mock active orders
+  const activeOrders = [
+    { id: '#ORD001', customer: 'John Doe', items: 'Veg Thali x2', amount: 240, status: 'Preparing', time: '10 min ago' },
+    { id: '#ORD002', customer: 'Jane Smith', items: 'Masala Dosa x1', amount: 80, status: 'Ready', time: '5 min ago' },
+    { id: '#ORD003', customer: 'Mike Wilson', items: 'Paneer Butter Masala x1', amount: 150, status: 'Delivered', time: '2 min ago' },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Preparing': return 'warning';
+      case 'Ready': return 'info';
+      case 'Delivered': return 'success';
+      default: return 'default';
     }
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
-
-  const handleCreateVendor = () => {
-    setEditingVendor(undefined);
-    setFormDialog(true);
-  };
-
-  const handleEditVendor = (vendor: VendorResponse) => {
-    setEditingVendor(vendor);
-    setFormDialog(true);
-  };
-
-  const handleFormSave = (vendor: VendorResponse) => {
-    setFormDialog(false);
-    setEditingVendor(undefined);
-    loadStatistics(); // Refresh statistics
-  };
-
-  const handleFormCancel = () => {
-    setFormDialog(false);
-    setEditingVendor(undefined);
-  };
-
-  const StatCard: React.FC<{ 
-    title: string; 
-    value: number | string; 
-    icon: React.ReactNode; 
-    color?: string;
-    subtitle?: string;
-  }> = ({ title, value, icon, color = 'primary', subtitle }) => (
-    <Card>
-      <CardContent>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Box>
-            <Typography color="textSecondary" gutterBottom variant="h6">
-              {title}
-            </Typography>
-            <Typography variant="h4" component="div">
-              {value}
-            </Typography>
-            {subtitle && (
-              <Typography variant="body2" color="textSecondary">
-                {subtitle}
-              </Typography>
-            )}
-          </Box>
-          <Box sx={{ color: `${color}.main` }}>
-            {icon}
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-
-  if (loading && !statistics) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            Vendor Portal
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            {hasManagementAccess 
-              ? 'Manage vendors, approve registrations, and monitor performance'
-              : 'View and manage your vendor information'
-            }
-          </Typography>
-        </Box>
-        {hasManagementAccess && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleCreateVendor}
-          >
-            Add Vendor
-          </Button>
-        )}
-      </Box>
+      <Typography variant="h4" gutterBottom>
+        Vendor Portal
+      </Typography>
+      <Typography variant="subtitle1" color="textSecondary" sx={{ mb: 3 }}>
+        Manage your menu, track orders, and grow your business
+      </Typography>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Statistics Cards - Only for Admin/Manager */}
-      {hasManagementAccess && statistics && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Vendors"
-              value={statistics.totalVendors || 0}
-              icon={<StoreIcon fontSize="large" />}
-              color="primary"
-            />
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {vendorStats.map((stat, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography color="textSecondary" variant="overline" display="block">
+                      {stat.title}
+                    </Typography>
+                    <Typography variant="h4" component="div">
+                      {stat.value}
+                    </Typography>
+                    <Chip
+                      label={stat.change}
+                      color={stat.color as any}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    />
+                  </Box>
+                  <Avatar sx={{ bgcolor: `${stat.color}.main`, width: 56, height: 56 }}>
+                    {stat.icon}
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Active Vendors"
-              value={statistics.activeVendors || 0}
-              icon={<ApprovedIcon fontSize="large" />}
-              color="success"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Pending Approval"
-              value={statistics.pendingApproval || 0}
-              icon={<PendingIcon fontSize="large" />}
-              color="warning"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Suspended"
-              value={statistics.suspendedVendors || 0}
-              icon={<SuspendedIcon fontSize="large" />}
-              color="error"
-            />
-          </Grid>
-        </Grid>
-      )}
-
-      {/* Vendor Type Statistics */}
-      {hasManagementAccess && statistics?.vendorTypeStatistics && (
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Vendor Types Distribution
-            </Typography>
-            <Box display="flex" flexWrap="wrap" gap={2}>
-              {Object.entries(statistics.vendorTypeStatistics).map(([type, count]) => (
-                <Chip
-                  key={type}
-                  label={`${type}: ${count}`}
-                  variant="outlined"
-                  color="primary"
-                />
-              ))}
-            </Box>
-          </CardContent>
-        </Card>
-      )}
+        ))}
+      </Grid>
 
       {/* Tabs */}
-      <Paper sx={{ width: '100%' }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          aria-label="vendor portal tabs"
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          <Tab label="All Vendors" />
-          {hasManagementAccess && <Tab label="Pending Approval" />}
-          <Tab label="Active Vendors" />
-          {hasManagementAccess && <Tab label="High Rated" />}
-          {hasManagementAccess && <Tab label="Temporary Vendors" />}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="vendor portal tabs">
+          <Tab label="Dashboard" />
+          <Tab label="Menu Management" />
+          <Tab label="Orders" />
+          <Tab label="Analytics" />
         </Tabs>
+      </Box>
 
-        {/* Tab Panels */}
-        <TabPanel value={activeTab} index={0}>
-          <VendorList
-            showActions={hasManagementAccess}
-            onVendorEdit={hasManagementAccess ? handleEditVendor : undefined}
-            onVendorCreate={hasManagementAccess ? handleCreateVendor : undefined}
-          />
-        </TabPanel>
-
-        {hasManagementAccess && (
-          <TabPanel value={activeTab} index={1}>
-            <VendorList
-              showActions={true}
-              statusFilter="PENDING"
-              onVendorEdit={handleEditVendor}
-              onVendorCreate={handleCreateVendor}
-            />
-          </TabPanel>
-        )}
-
-        <TabPanel value={activeTab} index={hasManagementAccess ? 2 : 1}>
-          <VendorList
-            showActions={hasManagementAccess}
-            statusFilter="APPROVED"
-            onVendorEdit={hasManagementAccess ? handleEditVendor : undefined}
-            onVendorCreate={hasManagementAccess ? handleCreateVendor : undefined}
-          />
-        </TabPanel>
-
-        {hasManagementAccess && (
-          <>
-            <TabPanel value={activeTab} index={3}>
-              <Box sx={{ p: 2 }}>
+      {/* Dashboard Tab */}
+      <TabPanel value={tabValue} index={0}>
+        <Grid container spacing={3}>
+          {/* Recent Activity */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  High Rated Vendors (4+ stars)
+                  Recent Activity
                 </Typography>
-                <VendorList
-                  showActions={true}
-                  onVendorEdit={handleEditVendor}
-                  onVendorCreate={handleCreateVendor}
-                />
-              </Box>
-            </TabPanel>
+                <List>
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'success.main' }}>
+                        <CheckCircle />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary="Order #ORD003 completed"
+                      secondary="₹150 earned • 2 minutes ago"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'warning.main' }}>
+                        <Schedule />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary="New order received"
+                      secondary="Veg Thali x2 • 10 minutes ago"
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'info.main' }}>
+                        <Star />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary="New 5-star review"
+                      secondary="From John Doe • 1 hour ago"
+                    />
+                  </ListItem>
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
 
-            <TabPanel value={activeTab} index={4}>
-              <VendorList
-                showActions={true}
-                typeFilter="TEMPORARY"
-                onVendorEdit={handleEditVendor}
-                onVendorCreate={handleCreateVendor}
-              />
-            </TabPanel>
-          </>
-        )}
-      </Paper>
+          {/* Quick Actions */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Quick Actions
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      startIcon={<Add />}
+                      onClick={() => setAddMenuItemOpen(true)}
+                    >
+                      Add New Menu Item
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button variant="outlined" fullWidth startIcon={<Schedule />}>
+                      Update Operating Hours
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button variant="outlined" fullWidth startIcon={<Notifications />}>
+                      Send Announcement
+                    </Button>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </TabPanel>
 
-      {/* Vendor Form Dialog */}
-      <Dialog
-        open={formDialog}
-        onClose={handleFormCancel}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: { minHeight: '80vh' }
-        }}
-      >
-        <DialogTitle>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">
-              {editingVendor ? 'Edit Vendor' : 'Create New Vendor'}
-            </Typography>
-            <IconButton onClick={handleFormCancel}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
+      {/* Menu Management Tab */}
+      <TabPanel value={tabValue} index={1}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+          <Typography variant="h6">Menu Items</Typography>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setAddMenuItemOpen(true)}
+          >
+            Add Item
+          </Button>
+        </Box>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Orders Today</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {menuItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.category}</TableCell>
+                  <TableCell>₹{item.price}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={item.status}
+                      color={item.status === 'Active' ? 'success' : 'default'}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>{item.orders}</TableCell>
+                  <TableCell>
+                    <IconButton size="small">
+                      <Visibility />
+                    </IconButton>
+                    <IconButton size="small">
+                      <Edit />
+                    </IconButton>
+                    <IconButton size="small">
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </TabPanel>
+
+      {/* Orders Tab */}
+      <TabPanel value={tabValue} index={2}>
+        <Typography variant="h6" gutterBottom>
+          Active Orders
+        </Typography>
+        <Grid container spacing={2}>
+          {activeOrders.map((order) => (
+            <Grid item xs={12} md={6} lg={4} key={order.id}>
+              <Card>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6">{order.id}</Typography>
+                    <Chip
+                      label={order.status}
+                      color={getStatusColor(order.status) as any}
+                      size="small"
+                    />
+                  </Box>
+                  <Typography color="textSecondary" gutterBottom>
+                    {order.customer}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    {order.items}
+                  </Typography>
+                  <Typography variant="h6" color="primary" sx={{ mb: 1 }}>
+                    ₹{order.amount}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    {order.time}
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    {order.status === 'Preparing' && (
+                      <Button variant="contained" size="small" fullWidth>
+                        Mark Ready
+                      </Button>
+                    )}
+                    {order.status === 'Ready' && (
+                      <Button variant="contained" color="success" size="small" fullWidth>
+                        Mark Delivered
+                      </Button>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </TabPanel>
+
+      {/* Analytics Tab */}
+      <TabPanel value={tabValue} index={3}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Sales Trend
+                </Typography>
+                <Typography variant="h4" color="primary">
+                  ₹18,450
+                </Typography>
+                <Typography color="textSecondary" gutterBottom>
+                  This Week
+                </Typography>
+                <LinearProgress variant="determinate" value={75} sx={{ mt: 2 }} />
+                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+                  75% of monthly target achieved
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Popular Items
+                </Typography>
+                <List dense>
+                  <ListItem>
+                    <ListItemText primary="Masala Dosa" secondary="31 orders today" />
+                    <Typography variant="body2">₹2,480</Typography>
+                  </ListItem>
+                  <Divider />
+                  <ListItem>
+                    <ListItemText primary="Veg Thali" secondary="23 orders today" />
+                    <Typography variant="body2">₹2,760</Typography>
+                  </ListItem>
+                  <Divider />
+                  <ListItem>
+                    <ListItemText primary="Paneer Butter Masala" secondary="18 orders today" />
+                    <Typography variant="body2">₹2,700</Typography>
+                  </ListItem>
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </TabPanel>
+
+      {/* Add Menu Item Dialog */}
+      <Dialog open={addMenuItemOpen} onClose={() => setAddMenuItemOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Menu Item</DialogTitle>
         <DialogContent>
-          <VendorForm
-            vendor={editingVendor}
-            onSave={handleFormSave}
-            onCancel={handleFormCancel}
-          />
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Item Name" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Price" type="number" InputProps={{ startAdornment: '₹' }} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Category</InputLabel>
+                <Select>
+                  <MenuItem value="main">Main Course</MenuItem>
+                  <MenuItem value="south">South Indian</MenuItem>
+                  <MenuItem value="beverages">Beverages</MenuItem>
+                  <MenuItem value="desserts">Desserts</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Description" multiline rows={3} />
+            </Grid>
+          </Grid>
         </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddMenuItemOpen(false)}>Cancel</Button>
+          <Button variant="contained">Add Item</Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

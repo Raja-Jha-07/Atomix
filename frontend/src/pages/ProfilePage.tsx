@@ -93,9 +93,12 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+    <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
       <Typography variant="h4" gutterBottom>
         My Profile
+      </Typography>
+      <Typography variant="subtitle1" color="textSecondary" sx={{ mb: 3 }}>
+        Manage your account information and preferences
       </Typography>
 
       {error && (
@@ -105,95 +108,110 @@ const ProfilePage: React.FC = () => {
       )}
 
       <Grid container spacing={3}>
-        {/* User Information Card */}
+        {/* Profile Overview */}
         <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    bgcolor: 'primary.main',
-                    fontSize: '2rem',
-                    mr: 3,
-                  }}
-                >
-                  {getUserInitials()}
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" gutterBottom>
-                    {user.firstName} {user.lastName}
-                  </Typography>
-                  <Chip
-                    label={formatRole(user.role)}
-                    color={getRoleColor(user.role) as any}
-                    variant="outlined"
-                  />
-                </Box>
-              </Box>
-
-              <Divider sx={{ mb: 2 }} />
-
-              <List>
-                <ListItem>
-                  <ListItemIcon>
-                    <Email />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="Email"
-                    secondary={user.email}
-                  />
-                </ListItem>
-
-                {user.employeeId && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <Badge />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Employee ID"
-                      secondary={user.employeeId}
-                    />
-                  </ListItem>
+          <Card sx={{ height: 'fit-content' }}>
+            <CardContent sx={{ textAlign: 'center', pt: 4 }}>
+              <Avatar
+                sx={{
+                  width: 100,
+                  height: 100,
+                  mx: 'auto',
+                  mb: 2,
+                  bgcolor: 'primary.main',
+                  fontSize: '2rem',
+                }}
+              >
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  getUserInitials()
                 )}
+              </Avatar>
+              
+              <Typography variant="h5" gutterBottom>
+                {user.firstName} {user.lastName}
+              </Typography>
+              
+              <Chip
+                label={formatRole(user.role)}
+                color={getRoleColor(user.role) as any}
+                sx={{ mb: 2 }}
+              />
+              
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                {user.email}
+              </Typography>
 
-                {user.phoneNumber && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <Phone />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Phone Number"
-                      secondary={user.phoneNumber}
-                    />
-                  </ListItem>
-                )}
+              {user.employeeId && (
+                <Typography variant="body2" color="textSecondary" gutterBottom>
+                  Employee ID: {user.employeeId}
+                </Typography>
+              )}
 
-                {user.department && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <Business />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Department"
-                      secondary={user.department}
-                    />
-                  </ListItem>
-                )}
+              <Divider sx={{ my: 3 }} />
 
-                {user.floorId && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <LocationOn />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Floor"
-                      secondary={user.floorId}
-                    />
-                  </ListItem>
-                )}
-              </List>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <List>
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon>
+                        <Email color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Email"
+                        secondary={user.email}
+                      />
+                    </ListItem>
+                    
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon>
+                        <Phone color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Phone Number"
+                        secondary={user.phoneNumber || 'Not provided'}
+                      />
+                    </ListItem>
+
+                    {user.employeeId && (
+                      <ListItem sx={{ px: 0 }}>
+                        <ListItemIcon>
+                          <Badge color="primary" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Employee ID"
+                          secondary={user.employeeId}
+                        />
+                      </ListItem>
+                    )}
+                  </List>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <List>
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon>
+                        <Business color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Department"
+                        secondary={user.department || 'Not specified'}
+                      />
+                    </ListItem>
+
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon>
+                        <LocationOn color="primary" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Floor"
+                        secondary={user.floorId || 'Not specified'}
+                      />
+                    </ListItem>
+                  </List>
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>
@@ -211,7 +229,7 @@ const ProfilePage: React.FC = () => {
                 <Typography variant="h4" color="primary">
                   ₹{currentBalance.toFixed(2)}
                 </Typography>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Food Card Balance
                 </Typography>
                 <Button
