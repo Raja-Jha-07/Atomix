@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: atomix-cafeteria
+
+  # Simplified PostgreSQL Configuration
+  datasource:
+    url: jdbc:postgresql://ep-rapid-math-a1ehc2en-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require
+    username: neondb_owner
+    password: npg_T29FfNVGnBcQ
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  # Disable Flyway for now
+  flyway:
+    enabled: false
+
+# Server Configuration
+server:
+  port: 8083
+
+# Logging
+logging:
+  level:
+    com.atomix.cafeteria: DEBUG
+    org.hibernate.SQL: DEBUG 
