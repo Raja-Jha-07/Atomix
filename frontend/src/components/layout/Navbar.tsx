@@ -15,20 +15,22 @@ import {
   ListItemIcon,
   ListItemText,
   alpha,
-  useTheme,
+  useTheme as useMuiTheme,
 } from '@mui/material';
 import {
   Notifications,
-  AccountCircle,
   Logout,
   Settings,
   Person,
   AccountBalanceWallet,
+  DarkMode,
+  LightMode,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { useLogoutMutation } from '../../store/api/authApi';
 import { logout } from '../../store/slices/authSlice';
+import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
 
 const Navbar: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -36,7 +38,8 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
-  const theme = useTheme();
+  const theme = useMuiTheme();
+  const { isDarkMode, toggleTheme } = useCustomTheme();
   
   const [logoutMutation] = useLogoutMutation();
 
@@ -114,11 +117,6 @@ const Navbar: React.FC = () => {
       <AppBar 
         position="sticky" 
         elevation={0}
-        sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          backdropFilter: 'blur(20px)',
-          borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
-        }}
       >
         <Toolbar sx={{ minHeight: '70px !important', px: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
@@ -127,13 +125,15 @@ const Navbar: React.FC = () => {
                 width: 40,
                 height: 40,
                 borderRadius: 2,
-                background: `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.2)} 0%, ${alpha(theme.palette.common.white, 0.1)} 100%)`,
+                background: theme.palette.mode === 'dark'
+                  ? `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.15)} 0%, ${alpha(theme.palette.common.white, 0.08)} 100%)`
+                  : `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.2)} 0%, ${alpha(theme.palette.common.white, 0.1)} 100%)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 mr: 2,
                 backdropFilter: 'blur(10px)',
-                border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+                border: `1px solid ${alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.15 : 0.2)}`,
               }}
             >
               <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
@@ -184,15 +184,32 @@ const Navbar: React.FC = () => {
               </Tooltip>
             )}
 
+            {/* Theme Toggle */}
+            <Tooltip title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+              <IconButton
+                color="inherit"
+                onClick={toggleTheme}
+                sx={{
+                  color: 'white',
+                  background: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.08 : 0.1),
+                  '&:hover': {
+                    background: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.15 : 0.2),
+                  },
+                }}
+              >
+                {isDarkMode ? <LightMode /> : <DarkMode />}
+              </IconButton>
+            </Tooltip>
+
             <Tooltip title="Notifications">
               <IconButton
                 color="inherit"
                 onClick={handleNotificationMenuOpen}
                 sx={{
                   color: 'white',
-                  background: alpha(theme.palette.common.white, 0.1),
+                  background: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.08 : 0.1),
                   '&:hover': {
-                    background: alpha(theme.palette.common.white, 0.2),
+                    background: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.15 : 0.2),
                   },
                 }}
               >
@@ -207,9 +224,9 @@ const Navbar: React.FC = () => {
                 onClick={handleProfileMenuOpen}
                 sx={{
                   ml: 1,
-                  background: alpha(theme.palette.common.white, 0.1),
+                  background: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.08 : 0.1),
                   '&:hover': {
-                    background: alpha(theme.palette.common.white, 0.2),
+                    background: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.15 : 0.2),
                   },
                 }}
               >

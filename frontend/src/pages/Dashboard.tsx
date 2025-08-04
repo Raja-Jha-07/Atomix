@@ -5,19 +5,15 @@ import {
   Card,
   CardContent,
   Typography,
-  Avatar,
   Chip,
   Button,
-  Alert,
   LinearProgress,
-  Divider,
   alpha,
   useTheme,
   IconButton,
   Stack,
   Paper,
   CardActions,
-  Tooltip,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -28,15 +24,11 @@ import {
   History,
   Add,
   Fastfood,
-  Schedule,
   Payment,
   TrendingDown,
   ArrowForward,
   Refresh,
   Notifications,
-  Star,
-  LocalOffer,
-  AccessTime,
 } from '@mui/icons-material';
 import { useAppSelector } from '../hooks/redux';
 import { useNavigate } from 'react-router-dom';

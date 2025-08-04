@@ -26,7 +26,6 @@ import {
   ShoppingCart,
   Favorite,
   CalendarToday,
-  PieChart,
 } from '@mui/icons-material';
 import { useAppSelector } from '../hooks/redux';
 

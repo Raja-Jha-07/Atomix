@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -31,11 +31,14 @@ import {
   Restaurant,
   Payment,
   Language,
+  LightMode,
 } from '@mui/icons-material';
 import { useAppSelector } from '../hooks/redux';
+import { useTheme as useCustomTheme } from '../contexts/ThemeContext';
 
 const SettingsPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
+  const { isDarkMode, setDarkMode } = useCustomTheme();
   
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -44,13 +47,18 @@ const SettingsPage: React.FC = () => {
     dailyMenuNotifications: true,
     promotionalEmails: false,
     weeklyDigest: true,
-    darkMode: false,
+    darkMode: isDarkMode,
     language: 'english',
     currency: 'INR',
     autoRecharge: false,
     lowBalanceAlert: true,
     soundNotifications: true,
   });
+
+  // Sync local settings with theme context
+  useEffect(() => {
+    setSettings(prev => ({ ...prev, darkMode: isDarkMode }));
+  }, [isDarkMode]);
 
   const [personalInfo, setPersonalInfo] = useState({
     phoneNumber: user?.phoneNumber || '',
@@ -71,9 +79,15 @@ const SettingsPage: React.FC = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const handleSettingChange = (setting: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.checked;
+    
+    if (setting === 'darkMode') {
+      setDarkMode(newValue);
+    }
+    
     setSettings(prev => ({
       ...prev,
-      [setting]: event.target.checked,
+      [setting]: newValue,
     }));
   };
 
@@ -93,6 +107,7 @@ const SettingsPage: React.FC = () => {
 
   const handleSaveSettings = () => {
     // TODO: Implement API call to save settings
+    // Theme is already saved automatically via localStorage in ThemeContext
     setShowSuccessMessage(true);
   };
 
@@ -314,11 +329,11 @@ const SettingsPage: React.FC = () => {
               <List>
                 <ListItem sx={{ px: 0 }}>
                   <ListItemIcon>
-                    <DarkMode />
+                    {isDarkMode ? <DarkMode /> : <LightMode />}
                   </ListItemIcon>
                   <ListItemText
                     primary="Dark Mode"
-                    secondary="Switch to dark theme"
+                    secondary={isDarkMode ? "Switch to light theme" : "Switch to dark theme"}
                   />
                   <ListItemSecondaryAction>
                     <Switch

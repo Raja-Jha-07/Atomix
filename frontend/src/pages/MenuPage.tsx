@@ -44,7 +44,6 @@ import {
   ShoppingCart,
   Restaurant,
   AccessTime,
-  Star,
   LocalOffer,
   Circle,
   AccountBalanceWallet,
@@ -167,7 +166,7 @@ const MenuPage: React.FC = () => {
       
       return matchesSearch && matchesCategory && matchesVendor;
     });
-  }, [searchTerm, selectedCategory, selectedVendor]);
+  }, [menuItems, searchTerm, selectedCategory, selectedVendor]);
 
   const addToCart = (item: MenuItem) => {
     setCartItems(prev => {
