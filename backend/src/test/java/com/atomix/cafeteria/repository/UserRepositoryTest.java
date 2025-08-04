@@ -22,6 +22,7 @@ class UserRepositoryTest {
     @Test
     void testFindByEmail() {
         // Given
+        LocalDateTime now = LocalDateTime.now();
         User user = new User();
         user.setEmail("test@example.com");
         user.setFirstName("Test");
@@ -31,7 +32,8 @@ class UserRepositoryTest {
         user.setIsActive(true);
         user.setEmailVerified(false);
         user.setFoodCardBalance(0.0);
-        // Note: createdAt and updatedAt are automatically set by @CreatedDate and @LastModifiedDate
+        user.setCreatedAt(now);
+        user.setUpdatedAt(now);
         
         userRepository.save(user);
 

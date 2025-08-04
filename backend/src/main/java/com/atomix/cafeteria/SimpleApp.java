@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-@SpringBootApplication(exclude = {
-    MongoDataAutoConfiguration.class,
-    MongoAutoConfiguration.class,
-    SecurityAutoConfiguration.class
-})
+// @SpringBootApplication(exclude = {
+//     MongoDataAutoConfiguration.class,
+//     MongoAutoConfiguration.class,
+//     SecurityAutoConfiguration.class
+// })
 @RestController
 @CrossOrigin(origins = "*")
 public class SimpleApp {

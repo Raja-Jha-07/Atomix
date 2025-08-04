@@ -56,7 +56,7 @@ import { updateUser } from '../store/slices/authSlice';
 import { paymentService } from '../services/paymentService';
 import orderService from '../services/orderService';
 
-interface MenuItem {
+interface MenuItemType {
   id: number;
   name: string;
   description: string;
@@ -72,7 +72,7 @@ interface MenuItem {
   discount?: number;
 }
 
-interface CartItem extends MenuItem {
+interface CartItem extends MenuItemType {
   quantity: number;
 }
 
@@ -94,7 +94,7 @@ const MenuPage: React.FC = () => {
   const [alertSeverity, setAlertSeverity] = useState<'success' | 'error' | 'warning'>('success');
 
   // Mock menu items data
-  const menuItems: MenuItem[] = [
+  const menuItems: MenuItemType[] = useMemo(() => [
     {
       id: 1,
       name: 'Butter Chicken',
