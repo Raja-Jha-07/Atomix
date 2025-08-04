@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -33,20 +33,13 @@ import {
   IconButton,
   Tabs,
   Tab,
-  Alert,
-  CircularProgress,
   Rating,
-  Switch,
-  FormControlLabel,
-  Badge,
   Tooltip,
 } from '@mui/material';
 import {
   Restaurant,
-  TrendingUp,
   ShoppingCart,
   AttachMoney,
-  People,
   Add,
   Edit,
   Delete,
@@ -117,7 +110,7 @@ const VendorPortal: React.FC = () => {
   const [addVendorOpen, setAddVendorOpen] = useState(false);
   const [editVendorOpen, setEditVendorOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
-  const [loading, setLoading] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
@@ -280,10 +273,7 @@ const VendorPortal: React.FC = () => {
     setEditVendorOpen(true);
   };
 
-  const handleStatusChange = (vendorId: number, newStatus: string) => {
-    // Handle status change logic here
-    console.log(`Changing vendor ${vendorId} status to ${newStatus}`);
-  };
+
 
   // Vendor Management Interface (for Admins/Managers)
   const renderVendorManagement = () => (

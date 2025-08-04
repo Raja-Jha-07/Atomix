@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+
 env:
   NODE_VERSION: '18'
   JAVA_VERSION: '21'
@@ -74,13 +80,14 @@ jobs:
         SPRING_PROFILES_ACTIVE: test
     
     - name: Generate test report
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v1.9.1
       if: success() || failure()
       with:
         name: Backend Tests
         path: backend/target/surefire-reports/*.xml
         reporter: java-junit
         fail-on-error: false
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Build application
       run: ./mvnw clean package -DskipTests

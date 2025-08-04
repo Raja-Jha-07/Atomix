@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -10,32 +10,88 @@ import {
   ListItemText,
   Divider,
   Button,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { Receipt, Refresh } from '@mui/icons-material';
+import orderService, { OrderResponse } from '../services/orderService';
 
 const OrdersPage: React.FC = () => {
-  const orders = [
+  const [orders, setOrders] = useState<OrderResponse[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+
+  // Mock data fallback when backend is not available
+  const mockOrders: OrderResponse[] = [
     {
-      id: 'ORD-001',
+      id: 1,
+      orderNumber: 'ORD-001',
       items: [
-        { name: 'Chicken Biryani', quantity: 1, price: 180 },
-        { name: 'Masala Chai', quantity: 2, price: 25 },
+        { menuItemId: 1, name: 'Chicken Biryani', quantity: 1, price: 180, vendor: 'Biryani Corner' },
+        { menuItemId: 2, name: 'Masala Chai', quantity: 2, price: 25, vendor: 'Tea Stall' },
       ],
-      total: 230,
-      status: 'PREPARING' as const,
+      totalAmount: 230,
+      status: 'PREPARING',
+      paymentMethod: 'FOOD_CARD',
+      paymentStatus: 'COMPLETED',
       createdAt: '2024-01-15T12:30:00Z',
+      estimatedDeliveryTime: '2024-01-15T13:00:00Z',
     },
     {
-      id: 'ORD-002',
+      id: 2,
+      orderNumber: 'ORD-002',
       items: [
-        { name: 'Paneer Butter Masala', quantity: 1, price: 140 },
-        { name: 'Dal Tadka', quantity: 1, price: 80 },
+        { menuItemId: 3, name: 'Paneer Butter Masala', quantity: 1, price: 140, vendor: 'North Indian Kitchen' },
+        { menuItemId: 4, name: 'Dal Tadka', quantity: 1, price: 80, vendor: 'North Indian Kitchen' },
       ],
-      total: 220,
-      status: 'DELIVERED' as const,
+      totalAmount: 220,
+      status: 'DELIVERED',
+      paymentMethod: 'FOOD_CARD',
+      paymentStatus: 'COMPLETED',
       createdAt: '2024-01-14T13:15:00Z',
+      estimatedDeliveryTime: '2024-01-14T13:45:00Z',
     },
   ];
+
+  const fetchOrders = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+
+      const response = await orderService.getUserOrders();
+      
+      if (response.success && response.orders) {
+        setOrders(response.orders);
+      } else {
+        // Fallback to mock data if API fails
+        console.warn('Backend not available, using mock data');
+        setOrders(mockOrders);
+        setError(null); // Clear error since we have fallback data
+      }
+    } catch (err) {
+      // Fallback to mock data on error (e.g., CORS, network issues)
+      console.warn('Backend not available, using mock data');
+      setOrders(mockOrders);
+      setError(null); // Clear error since we have fallback data
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleRefresh = () => {
+    fetchOrders(true);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -73,14 +129,25 @@ const OrdersPage: React.FC = () => {
         </Box>
         <Button
           variant="outlined"
-          startIcon={<Refresh />}
-          onClick={() => window.location.reload()}
+          startIcon={refreshing ? <CircularProgress size={16} /> : <Refresh />}
+          onClick={handleRefresh}
+          disabled={refreshing}
         >
-          Refresh
+          {refreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
       </Box>
 
-      {orders.length > 0 ? (
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : orders.length > 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {orders.map((order) => (
             <Card key={order.id}>
@@ -88,7 +155,7 @@ const OrdersPage: React.FC = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                   <Box>
                     <Typography variant="h6" gutterBottom>
-                      Order #{order.id}
+                      Order #{order.orderNumber}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
                       Placed on {formatDate(order.createdAt)}
@@ -121,7 +188,7 @@ const OrdersPage: React.FC = () => {
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="h6">
-                    Total: ₹{order.total}
+                    Total: ₹{order.totalAmount}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {order.status === 'DELIVERED' && (

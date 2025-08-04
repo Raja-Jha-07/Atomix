@@ -7,7 +7,6 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   min-height: 100vh;
 }
 
@@ -35,7 +34,6 @@ html {
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
 .main-content {
@@ -211,9 +209,24 @@ html {
   }
 }
 
-/* Dark mode preparation (for future implementation) */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  /* This will be populated when dark mode is implemented */
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+  }
+  
+  /* Firefox dark mode scrollbar */
+  * {
+    scrollbar-color: #475569 rgba(255, 255, 255, 0.05);
+  }
 }
 
 /* Additional utility classes */
