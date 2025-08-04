@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -33,6 +33,13 @@ import {
   IconButton,
   Tabs,
   Tab,
+  Alert,
+  CircularProgress,
+  Rating,
+  Switch,
+  FormControlLabel,
+  Badge,
+  Tooltip,
 } from '@mui/material';
 import {
   Restaurant,
@@ -50,7 +57,18 @@ import {
   Pending,
   Cancel,
   Notifications,
+  Store,
+  Block,
+  PersonAdd,
+  Business,
+  Phone,
+  Email,
+  LocationOn,
+  MoreVert,
+  Search,
+  FilterList,
 } from '@mui/icons-material';
+import { useAppSelector } from '../hooks/redux';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -74,47 +92,145 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+interface Vendor {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  cuisineType: string;
+  status: 'ACTIVE' | 'PENDING' | 'SUSPENDED' | 'INACTIVE';
+  rating: number;
+  totalOrders: number;
+  revenue: number;
+  joinedDate: string;
+  lastActive: string;
+  description: string;
+  operatingHours: string;
+  menuItemsCount: number;
+}
+
 const VendorPortal: React.FC = () => {
+  const { user } = useAppSelector((state) => state.auth);
   const [tabValue, setTabValue] = useState(0);
   const [addMenuItemOpen, setAddMenuItemOpen] = useState(false);
+  const [addVendorOpen, setAddVendorOpen] = useState(false);
+  const [editVendorOpen, setEditVendorOpen] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+
+  const isVendor = user?.role === 'VENDOR';
+  const isManager = user?.role === 'CAFETERIA_MANAGER' || user?.role === 'ADMIN';
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  // Mock vendor stats
+  // Mock vendors data for management view
+  const vendors: Vendor[] = [
+    {
+      id: 1,
+      name: "North Indian Corner",
+      email: "north.indian@example.com",
+      phone: "+91 98765 43210",
+      address: "Building A, Floor 2",
+      cuisineType: "North Indian",
+      status: "ACTIVE",
+      rating: 4.5,
+      totalOrders: 245,
+      revenue: 58420,
+      joinedDate: "2024-01-15",
+      lastActive: "2 minutes ago",
+      description: "Authentic North Indian cuisine with traditional recipes",
+      operatingHours: "9:00 AM - 6:00 PM",
+      menuItemsCount: 24
+    },
+    {
+      id: 2,
+      name: "South Indian Express",
+      email: "south.express@example.com",
+      phone: "+91 98765 43211",
+      address: "Building B, Floor 1",
+      cuisineType: "South Indian",
+      status: "ACTIVE",
+      rating: 4.7,
+      totalOrders: 312,
+      revenue: 67890,
+      joinedDate: "2024-02-01",
+      lastActive: "5 minutes ago",
+      description: "Fresh dosas, idlis, and traditional South Indian meals",
+      operatingHours: "8:00 AM - 7:00 PM",
+      menuItemsCount: 18
+    },
+    {
+      id: 3,
+      name: "Healthy Bites",
+      email: "healthy.bites@example.com",
+      phone: "+91 98765 43212",
+      address: "Building C, Floor 3",
+      cuisineType: "Healthy",
+      status: "PENDING",
+      rating: 0,
+      totalOrders: 0,
+      revenue: 0,
+      joinedDate: "2024-12-01",
+      lastActive: "Never",
+      description: "Nutritious and healthy meal options for fitness enthusiasts",
+      operatingHours: "10:00 AM - 5:00 PM",
+      menuItemsCount: 0
+    },
+    {
+      id: 4,
+      name: "Street Food Junction",
+      email: "street.food@example.com",
+      phone: "+91 98765 43213",
+      address: "Building A, Floor 1",
+      cuisineType: "Street Food",
+      status: "SUSPENDED",
+      rating: 3.8,
+      totalOrders: 89,
+      revenue: 12340,
+      joinedDate: "2024-03-15",
+      lastActive: "2 days ago",
+      description: "Popular street food items with authentic flavors",
+      operatingHours: "11:00 AM - 4:00 PM",
+      menuItemsCount: 15
+    }
+  ];
+
   const vendorStats = [
     {
-      title: 'Today\'s Revenue',
-      value: '₹3,240',
-      change: '+12%',
-      icon: <AttachMoney />,
+      title: isVendor ? 'Today\'s Revenue' : 'Total Vendors',
+      value: isVendor ? '₹3,240' : '24',
+      change: isVendor ? '+12%' : '+3 this month',
+      icon: isVendor ? <AttachMoney /> : <Store />,
       color: 'success',
     },
     {
-      title: 'Active Orders',
-      value: '8',
-      change: '+3',
-      icon: <ShoppingCart />,
+      title: isVendor ? 'Active Orders' : 'Active Vendors',
+      value: isVendor ? '8' : '18',
+      change: isVendor ? '+3' : '+2 this week',
+      icon: isVendor ? <ShoppingCart /> : <CheckCircle />,
       color: 'primary',
     },
     {
-      title: 'Menu Items',
-      value: '24',
-      change: '+2',
-      icon: <Restaurant />,
-      color: 'info',
+      title: isVendor ? 'Menu Items' : 'Pending Approvals',
+      value: isVendor ? '24' : '3',
+      change: isVendor ? '+2' : 'Requires attention',
+      icon: isVendor ? <Restaurant /> : <Pending />,
+      color: isVendor ? 'info' : 'warning',
     },
     {
-      title: 'Customer Rating',
-      value: '4.8',
-      change: '+0.2',
+      title: isVendor ? 'Customer Rating' : 'Avg. Rating',
+      value: isVendor ? '4.8' : '4.2',
+      change: isVendor ? '+0.2' : '+0.1 this month',
       icon: <Star />,
       color: 'warning',
     },
   ];
 
-  // Mock menu items
   const menuItems = [
     { id: 1, name: 'Veg Thali', price: 120, category: 'Main Course', status: 'Active', orders: 23 },
     { id: 2, name: 'Paneer Butter Masala', price: 150, category: 'Main Course', status: 'Active', orders: 18 },
@@ -122,7 +238,6 @@ const VendorPortal: React.FC = () => {
     { id: 4, name: 'Filter Coffee', price: 25, category: 'Beverages', status: 'Inactive', orders: 0 },
   ];
 
-  // Mock active orders
   const activeOrders = [
     { id: '#ORD001', customer: 'John Doe', items: 'Veg Thali x2', amount: 240, status: 'Preparing', time: '10 min ago' },
     { id: '#ORD002', customer: 'Jane Smith', items: 'Masala Dosa x1', amount: 80, status: 'Ready', time: '5 min ago' },
@@ -131,6 +246,10 @@ const VendorPortal: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'ACTIVE': return 'success';
+      case 'PENDING': return 'warning';
+      case 'SUSPENDED': return 'error';
+      case 'INACTIVE': return 'default';
       case 'Preparing': return 'warning';
       case 'Ready': return 'info';
       case 'Delivered': return 'success';
@@ -138,8 +257,345 @@ const VendorPortal: React.FC = () => {
     }
   };
 
-  return (
-    <Box sx={{ p: 3 }}>
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'ACTIVE': return <CheckCircle />;
+      case 'PENDING': return <Pending />;
+      case 'SUSPENDED': return <Block />;
+      case 'INACTIVE': return <Cancel />;
+      default: return <Cancel />;
+    }
+  };
+
+  const filteredVendors = vendors.filter(vendor => {
+    const matchesSearch = vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         vendor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         vendor.cuisineType.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || vendor.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleEditVendor = (vendor: Vendor) => {
+    setSelectedVendor(vendor);
+    setEditVendorOpen(true);
+  };
+
+  const handleStatusChange = (vendorId: number, newStatus: string) => {
+    // Handle status change logic here
+    console.log(`Changing vendor ${vendorId} status to ${newStatus}`);
+  };
+
+  // Vendor Management Interface (for Admins/Managers)
+  const renderVendorManagement = () => (
+    <>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h4" gutterBottom>
+            Vendor Management
+          </Typography>
+          <Typography variant="subtitle1" color="textSecondary">
+            Manage vendor registrations, approvals, and performance
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<PersonAdd />}
+          onClick={() => setAddVendorOpen(true)}
+        >
+          Add Vendor
+        </Button>
+      </Box>
+
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {vendorStats.map((stat, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box>
+                    <Typography color="textSecondary" variant="overline" display="block">
+                      {stat.title}
+                    </Typography>
+                    <Typography variant="h4" component="div">
+                      {stat.value}
+                    </Typography>
+                    <Chip
+                      label={stat.change}
+                      color={stat.color as any}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    />
+                  </Box>
+                  <Avatar sx={{ bgcolor: `${stat.color}.main`, width: 56, height: 56 }}>
+                    {stat.icon}
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Search and Filter */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                placeholder="Search vendors by name, email, or cuisine..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Status Filter</InputLabel>
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  startAdornment={<FilterList sx={{ mr: 1, color: 'text.secondary' }} />}
+                >
+                  <MenuItem value="ALL">All Status</MenuItem>
+                  <MenuItem value="ACTIVE">Active</MenuItem>
+                  <MenuItem value="PENDING">Pending</MenuItem>
+                  <MenuItem value="SUSPENDED">Suspended</MenuItem>
+                  <MenuItem value="INACTIVE">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Typography variant="body2" color="textSecondary">
+                {filteredVendors.length} vendor(s) found
+              </Typography>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+      {/* Vendors List */}
+      <Grid container spacing={3}>
+        {filteredVendors.map((vendor) => (
+          <Grid item xs={12} lg={6} key={vendor.id}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+                      <Restaurant />
+                    </Avatar>
+                    <Box>
+                      <Typography variant="h6" gutterBottom>
+                        {vendor.name}
+                      </Typography>
+                      <Chip 
+                        icon={getStatusIcon(vendor.status)}
+                        label={vendor.status}
+                        color={getStatusColor(vendor.status) as any}
+                        size="small"
+                      />
+                    </Box>
+                  </Box>
+                  <IconButton size="small">
+                    <MoreVert />
+                  </IconButton>
+                </Box>
+
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <Email sx={{ mr: 1, fontSize: 16 }} />
+                    {vendor.email}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <Phone sx={{ mr: 1, fontSize: 16 }} />
+                    {vendor.phone}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <LocationOn sx={{ mr: 1, fontSize: 16 }} />
+                    {vendor.address}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Business sx={{ mr: 1, fontSize: 16 }} />
+                    {vendor.cuisineType}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Box>
+                    <Typography variant="body2" color="textSecondary">Rating</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Rating value={vendor.rating} readOnly size="small" />
+                      <Typography variant="body2" sx={{ ml: 0.5 }}>
+                        {vendor.rating || 'N/A'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body2" color="textSecondary">Orders</Typography>
+                    <Typography variant="h6">{vendor.totalOrders}</Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body2" color="textSecondary">Revenue</Typography>
+                    <Typography variant="h6" color="primary">₹{vendor.revenue.toLocaleString()}</Typography>
+                  </Box>
+                </Box>
+
+                <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+                  "{vendor.description}"
+                </Typography>
+
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="caption" color="textSecondary">
+                    Joined: {new Date(vendor.joinedDate).toLocaleDateString()}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="View Details">
+                      <IconButton size="small" color="primary">
+                        <Visibility />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Edit Vendor">
+                      <IconButton size="small" color="primary" onClick={() => handleEditVendor(vendor)}>
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete Vendor">
+                      <IconButton size="small" color="error">
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Add Vendor Dialog */}
+      <Dialog open={addVendorOpen} onClose={() => setAddVendorOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Add New Vendor</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Vendor Name" required />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Email" type="email" required />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Phone Number" required />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Cuisine Type</InputLabel>
+                <Select>
+                  <MenuItem value="North Indian">North Indian</MenuItem>
+                  <MenuItem value="South Indian">South Indian</MenuItem>
+                  <MenuItem value="Chinese">Chinese</MenuItem>
+                  <MenuItem value="Continental">Continental</MenuItem>
+                  <MenuItem value="Street Food">Street Food</MenuItem>
+                  <MenuItem value="Healthy">Healthy</MenuItem>
+                  <MenuItem value="Desserts">Desserts</MenuItem>
+                  <MenuItem value="Beverages">Beverages</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Address" required />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField fullWidth label="Operating Hours" placeholder="9:00 AM - 6:00 PM" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Initial Status</InputLabel>
+                <Select defaultValue="PENDING">
+                  <MenuItem value="PENDING">Pending</MenuItem>
+                  <MenuItem value="ACTIVE">Active</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Description" multiline rows={3} />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddVendorOpen(false)}>Cancel</Button>
+          <Button variant="contained">Add Vendor</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Vendor Dialog */}
+      <Dialog open={editVendorOpen} onClose={() => setEditVendorOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Vendor - {selectedVendor?.name}</DialogTitle>
+        <DialogContent>
+          {selectedVendor && (
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth label="Vendor Name" defaultValue={selectedVendor.name} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth label="Email" defaultValue={selectedVendor.email} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth label="Phone Number" defaultValue={selectedVendor.phone} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select defaultValue={selectedVendor.status}>
+                    <MenuItem value="ACTIVE">Active</MenuItem>
+                    <MenuItem value="PENDING">Pending</MenuItem>
+                    <MenuItem value="SUSPENDED">Suspended</MenuItem>
+                    <MenuItem value="INACTIVE">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField fullWidth label="Address" defaultValue={selectedVendor.address} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth label="Operating Hours" defaultValue={selectedVendor.operatingHours} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Cuisine Type</InputLabel>
+                  <Select defaultValue={selectedVendor.cuisineType}>
+                    <MenuItem value="North Indian">North Indian</MenuItem>
+                    <MenuItem value="South Indian">South Indian</MenuItem>
+                    <MenuItem value="Chinese">Chinese</MenuItem>
+                    <MenuItem value="Continental">Continental</MenuItem>
+                    <MenuItem value="Street Food">Street Food</MenuItem>
+                    <MenuItem value="Healthy">Healthy</MenuItem>
+                    <MenuItem value="Desserts">Desserts</MenuItem>
+                    <MenuItem value="Beverages">Beverages</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField fullWidth label="Description" multiline rows={3} defaultValue={selectedVendor.description} />
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditVendorOpen(false)}>Cancel</Button>
+          <Button variant="contained">Save Changes</Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+
+  // Individual Vendor Dashboard
+  const renderVendorDashboard = () => (
+    <>
       <Typography variant="h4" gutterBottom>
         Vendor Portal
       </Typography>
@@ -459,6 +915,12 @@ const VendorPortal: React.FC = () => {
           <Button variant="contained">Add Item</Button>
         </DialogActions>
       </Dialog>
+    </>
+  );
+
+  return (
+    <Box sx={{ p: 3 }}>
+      {isManager ? renderVendorManagement() : renderVendorDashboard()}
     </Box>
   );
 };

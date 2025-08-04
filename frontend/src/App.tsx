@@ -89,7 +89,7 @@ const App: React.FC = () => {
               } />
               
               <Route path="/vendor-portal" element={
-                <ProtectedRoute allowedRoles={['VENDOR']}>
+                <ProtectedRoute allowedRoles={['VENDOR', 'ADMIN']}>
                   <VendorPortal />
                 </ProtectedRoute>
               } />

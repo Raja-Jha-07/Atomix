@@ -57,8 +57,15 @@ const navigationItems: NavigationItem[] = [
     requiredRoles: ['CAFETERIA_MANAGER'],
   },
   {
-    text: 'Vendor Portal',
+    text: 'Vendor',
     icon: <BusinessCenter />,
+    path: '/vendor-portal',
+    requiredRoles: ['ADMIN'],
+    badge: 3, // Pending vendor approvals for admins
+  },
+  {
+    text: 'My Business',
+    icon: <Store />,
     path: '/vendor-portal',
     requiredRoles: ['VENDOR'],
   },
@@ -344,15 +351,19 @@ const Sidebar: React.FC = () => {
                   
                   {item.badge && (
                     <Chip
-                      label={item.badge}
+                      label={item.path === '/vendor-portal' 
+                        ? `${item.badge} pending` 
+                        : item.badge}
                       size="small"
                       sx={{
                         height: 20,
                         fontSize: '0.7rem',
                         fontWeight: 600,
-                        backgroundColor: item.isNew 
-                          ? theme.palette.success.main 
-                          : theme.palette.error.main,
+                        backgroundColor: item.path === '/vendor-portal' 
+                          ? theme.palette.warning.main
+                          : item.isNew 
+                            ? theme.palette.success.main 
+                            : theme.palette.error.main,
                         color: 'white',
                         '& .MuiChip-label': {
                           px: 1,

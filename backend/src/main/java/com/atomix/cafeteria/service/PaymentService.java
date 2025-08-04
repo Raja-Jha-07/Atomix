@@ -207,11 +207,11 @@ public class PaymentService {
         userRepository.save(user);
         
         // Mark payment as successful
-        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setPaymentStatus(PaymentStatus.COMPLETED);
         payment.setProcessedAt(LocalDateTime.now());
         paymentRepository.save(payment);
         
-        response.setPaymentStatus(PaymentStatus.PAID);
+        response.setPaymentStatus(PaymentStatus.COMPLETED);
         response.setProcessedAt(payment.getProcessedAt());
         
         logger.info("Processed food card payment: {} for user: {}", payment.getPaymentId(), user.getId());
@@ -295,7 +295,7 @@ public class PaymentService {
     }
     
     private PaymentResponse processSuccessfulPayment(com.atomix.cafeteria.entity.Payment payment) {
-        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setPaymentStatus(PaymentStatus.COMPLETED);
         payment.setProcessedAt(LocalDateTime.now());
         
         // If this is a food card top-up, add amount to user's balance
