@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-@SpringBootApplication(exclude = {
-    DataSourceAutoConfiguration.class,
-    HibernateJpaAutoConfiguration.class,
-    MongoDataAutoConfiguration.class,
-    MongoAutoConfiguration.class,
-    SecurityAutoConfiguration.class
-})
-@RestController
-@CrossOrigin(origins = "*")
+// @SpringBootApplication(exclude = {
+//     DataSourceAutoConfiguration.class,
+//     HibernateJpaAutoConfiguration.class,
+//     MongoDataAutoConfiguration.class,
+//     MongoAutoConfiguration.class,
+//     SecurityAutoConfiguration.class
+// })
+// @RestController
+// @CrossOrigin(origins = "*")
 public class SimpleTestApp {
 
     public static void main(String[] args) {

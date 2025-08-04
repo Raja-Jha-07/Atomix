@@ -37,8 +37,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   useEffect(() => {
     if (error && token) {
-      // If there's an error fetching user data and we have a token, logout
-      dispatch(logout());
+      // Check if error is a FetchBaseQueryError with status 401
+      if ('status' in error && error.status === 401) {
+        // Only logout for authentication errors, not network errors
+        dispatch(logout());
+      }
     }
   }, [error, token, dispatch]);
 

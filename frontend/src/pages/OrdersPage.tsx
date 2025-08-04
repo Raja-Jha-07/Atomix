@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -25,7 +25,7 @@ const OrdersPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Mock data fallback when backend is not available
-  const mockOrders: OrderResponse[] = [
+  const mockOrders: OrderResponse[] = useMemo(() => [
     {
       id: 1,
       orderNumber: 'ORD-001',
@@ -54,9 +54,9 @@ const OrdersPage: React.FC = () => {
       createdAt: '2024-01-14T13:15:00Z',
       estimatedDeliveryTime: '2024-01-14T13:45:00Z',
     },
-  ];
+  ], []);
 
-  const fetchOrders = async (isRefresh = false) => {
+  const fetchOrders = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {
         setRefreshing(true);
@@ -84,11 +84,11 @@ const OrdersPage: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [mockOrders]);
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
 
   const handleRefresh = () => {
     fetchOrders(true);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -20,6 +20,12 @@ import { useAppSelector } from './hooks/redux';
 
 const App: React.FC = () => {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const location = useLocation();
+  
+  // Pages where sidebar and navbar should not be shown
+  const authPages = ['/login', '/register'];
+  const isAuthPage = authPages.includes(location.pathname);
+  const showLayout = isAuthenticated && !isAuthPage;
 
   // Role-based default route
   const getRoleBasedRoute = () => {
@@ -48,7 +54,7 @@ const App: React.FC = () => {
         bgcolor: 'background.default',
       }}
     >
-      {isAuthenticated && <Navbar />}
+      {showLayout && <Navbar />}
       <Box 
         className="main-content" 
         sx={{ 
@@ -57,12 +63,12 @@ const App: React.FC = () => {
           overflow: 'hidden'
         }}
       >
-        {isAuthenticated && <Sidebar />}
+        {showLayout && <Sidebar />}
         <Box 
           component="main" 
           sx={{ 
             flex: 1, 
-            p: isAuthenticated ? 3 : 0, 
+            p: showLayout ? 3 : 0, 
             overflow: 'auto',
             bgcolor: 'background.default',
           }}

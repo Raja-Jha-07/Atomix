@@ -42,7 +42,8 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem('token', response.token);
       return response;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      console.error('Login error:', error);
+      return rejectWithValue(error.message || error.response?.data?.message || 'Login failed');
     }
   }
 );

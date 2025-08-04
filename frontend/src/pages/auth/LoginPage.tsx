@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -48,14 +48,12 @@ const schema = yup.object().shape({
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useAppDispatch();
   const theme = useTheme();
   
   const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
   
-  const from = (location.state as any)?.from?.pathname || '/';
+
 
   const {
     register,
@@ -66,17 +64,31 @@ const LoginPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
-    }
-  }, [isAuthenticated, navigate, from]);
-
-  useEffect(() => {
     dispatch(clearError());
   }, [dispatch]);
 
+  // If already authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const onSubmit = async (data: LoginForm) => {
-    dispatch(loginUser(data));
+    console.log('🔥 Form submitted with data:', data);
+    console.log('🔥 Current auth state before login:', { isLoading, error, isAuthenticated });
+    
+    try {
+      console.log('🔥 Dispatching loginUser action...');
+      const result = await dispatch(loginUser(data));
+      console.log('🔥 Login action result:', result);
+      
+      if (loginUser.fulfilled.match(result)) {
+        console.log('✅ Login successful!', result.payload);
+      } else if (loginUser.rejected.match(result)) {
+        console.log('❌ Login failed:', result.payload);
+      }
+    } catch (error) {
+      console.error('💥 Form submission error:', error);
+    }
   };
 
   const features = [
@@ -293,6 +305,41 @@ const LoginPage: React.FC = () => {
                     {error}
                   </Alert>
                 )}
+
+                {/* Test Mock Auth Button */}
+                <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                  <Button 
+                    onClick={() => {
+                      console.log('🧪 Testing mock auth directly...');
+                      onSubmit({ email: 'admin@atomix.com', password: 'password123' });
+                    }}
+                    variant="outlined"
+                    size="small"
+                  >
+                    🧪 Test Admin
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      console.log('🧪 Testing employee auth...');
+                      onSubmit({ email: 'employee@atomix.com', password: 'password123' });
+                    }}
+                    variant="outlined"
+                    size="small"
+                  >
+                    👨‍💼 Test Employee
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      console.log('🧪 Testing invalid credentials...');
+                      onSubmit({ email: 'invalid@test.com', password: 'wrongpass' });
+                    }}
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                  >
+                    ❌ Test Invalid
+                  </Button>
+                </Stack>
 
                 {/* Login Form */}
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
