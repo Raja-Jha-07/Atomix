@@ -64,19 +64,33 @@ const mockUsers = {
 
 const authAPI = {
   login: async (credentials: { email: string; password: string }) => {
+    console.log('🔐 authAPI.login called with:', credentials);
+    console.log('🔐 USE_MOCK_AUTH:', USE_MOCK_AUTH);
+    
     if (USE_MOCK_AUTH) {
+      console.log('🔐 Using mock authentication...');
+      console.log('🔐 Available mock users:', Object.keys(mockUsers));
+      
       // Mock authentication - accept any password for demo users
       const user = mockUsers[credentials.email as keyof typeof mockUsers];
+      console.log('🔐 Found user for email:', user ? 'Yes' : 'No');
+      console.log('🔐 Password length check:', credentials.password.length, '>=', 8, '=', credentials.password.length >= 8);
+      
       if (user && credentials.password.length >= 8) {
-        return {
+        const response = {
           user,
           token: `mock-jwt-token-${user.id}`,
           message: 'Login successful',
         };
+        console.log('✅ Mock login successful:', response);
+        return response;
       } else {
-        throw new Error('Invalid credentials. Use demo emails: admin@atomix.com, employee@atomix.com, vendor@atomix.com, manager@atomix.com with any 8+ char password');
+        const errorMsg = 'Invalid credentials. Use demo emails: admin@atomix.com, employee@atomix.com, vendor@atomix.com, manager@atomix.com with any 8+ char password';
+        console.log('❌ Mock login failed:', errorMsg);
+        throw new Error(errorMsg);
       }
     } else {
+      console.log('🔐 Using real backend authentication...');
       const response = await axios.post(`${API_BASE_URL}/auth/login`, credentials);
       return response.data;
     }
