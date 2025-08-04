@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -20,7 +20,6 @@ import { useAppSelector } from './hooks/redux';
 
 const App: React.FC = () => {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
-  const theme = useTheme();
 
   // Role-based default route
   const getRoleBasedRoute = () => {

@@ -19,7 +19,6 @@ import {
 } from '@mui/material';
 import {
   Notifications,
-  AccountCircle,
   Logout,
   Settings,
   Person,

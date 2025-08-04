@@ -8,7 +8,6 @@ import {
   ListItemText,
   Box,
   Typography,
-  Divider,
   alpha,
   useTheme,
   Chip,
@@ -27,7 +26,6 @@ import {
   Payment,
   AccountBalanceWallet,
   TrendingUp,
-  People,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';

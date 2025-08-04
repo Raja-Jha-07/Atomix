@@ -21,7 +21,7 @@ const OrdersPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [usingMockData, setUsingMockData] = useState<boolean>(false);
+
 
   // Mock data fallback when backend is not available
   const mockOrders: OrderResponse[] = [
@@ -68,19 +68,16 @@ const OrdersPage: React.FC = () => {
       
       if (response.success && response.orders) {
         setOrders(response.orders);
-        setUsingMockData(false);
       } else {
         // Fallback to mock data if API fails
         console.warn('Backend not available, using mock data');
         setOrders(mockOrders);
-        setUsingMockData(true);
         setError(null); // Clear error since we have fallback data
       }
     } catch (err) {
       // Fallback to mock data on error (e.g., CORS, network issues)
       console.warn('Backend not available, using mock data');
       setOrders(mockOrders);
-      setUsingMockData(true);
       setError(null); // Clear error since we have fallback data
     } finally {
       setLoading(false);
