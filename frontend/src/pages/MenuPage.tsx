@@ -542,7 +542,9 @@ const MenuPage: React.FC = () => {
                     </Box>
 
                     {item.isAvailable ? (
-                      quantity > 0 ? (
+                      user?.role === 'CAFETERIA_MANAGER' ? (
+                        <Chip label="View Only" color="default" variant="outlined" />
+                      ) : quantity > 0 ? (
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <IconButton onClick={() => removeFromCart(item.id)} size="small">
                             <Remove />
@@ -589,7 +591,7 @@ const MenuPage: React.FC = () => {
       )}
 
       {/* Floating Cart Button */}
-      {getTotalItems() > 0 && (
+      {getTotalItems() > 0 && user?.role !== 'CAFETERIA_MANAGER' && (
         <Fab
           color="primary"
           onClick={() => setShowCart(true)}
@@ -606,12 +608,13 @@ const MenuPage: React.FC = () => {
       )}
 
       {/* Cart Drawer */}
-      <Drawer
-        anchor="right"
-        open={showCart}
-        onClose={() => setShowCart(false)}
-        PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}
-      >
+      {user?.role !== 'CAFETERIA_MANAGER' && (
+        <Drawer
+          anchor="right"
+          open={showCart}
+          onClose={() => setShowCart(false)}
+          PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}
+        >
         <Box sx={{ p: 2 }}>
           <Typography variant="h6" gutterBottom>
             Your Order
@@ -664,6 +667,7 @@ const MenuPage: React.FC = () => {
           </Box>
         </Box>
       </Drawer>
+      )}
 
       {/* Payment Method Selection Dialog */}
       <Dialog open={showPaymentDialog} onClose={() => setShowPaymentDialog(false)} maxWidth="sm" fullWidth>

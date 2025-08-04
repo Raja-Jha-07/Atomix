@@ -23,10 +23,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
-@Tag(name = "Authentication", description = "Authentication management APIs")
-@CrossOrigin(origins = "${app.cors.allowed-origins}")
-public class AuthController {
+@RequestMapping("/api/v1/auth")
+@Tag(name = "Authentication V1", description = "Authentication management APIs v1")
+@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"}, allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
+public class AuthV1Controller {
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -35,33 +35,48 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder encoder;
 
     @Autowired
     private JwtUtils jwtUtils;
 
-    @Operation(summary = "User login", description = "Authenticate user and return JWT token")
+    @Operation(summary = "Get current user", description = "Get current authenticated user information")
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        
+        return ResponseEntity.ok(userPrincipal);
+    }
+
+    @Operation(summary = "User login", description = "Login with email and password")
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(
+                    loginRequest.getEmail(),
+                    loginRequest.getPassword()
+                )
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             String jwt = jwtUtils.generateJwtToken(authentication);
-            String refreshToken = jwtUtils.generateRefreshToken(userPrincipal.getEmail());
+            
+            UserPrincipal userDetails = (UserPrincipal) authentication.getPrincipal();
+            String refreshToken = jwtUtils.generateRefreshToken(userDetails.getEmail());
 
             return ResponseEntity.ok(new JwtResponse(
                 jwt,
                 refreshToken,
-                userPrincipal.getId(),
-                userPrincipal.getEmail(),
-                userPrincipal.getFirstName(),
-                userPrincipal.getLastName(),
-                userPrincipal.getRole()
+                userDetails.getId(),
+                userDetails.getEmail(),
+                userDetails.getFirstName(),
+                userDetails.getLastName(),
+                userDetails.getRole()
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -69,7 +84,7 @@ public class AuthController {
         }
     }
 
-    @Operation(summary = "User registration", description = "Register a new user account")
+    @Operation(summary = "User registration", description = "Register a new user")
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
@@ -82,30 +97,17 @@ public class AuthController {
         user.setEmail(signupRequest.getEmail());
         user.setFirstName(signupRequest.getFirstName());
         user.setLastName(signupRequest.getLastName());
-        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-        user.setRole(UserRole.valueOf(signupRequest.getRole().toUpperCase()));
+        user.setPassword(encoder.encode(signupRequest.getPassword()));
+        user.setRole(UserRole.EMPLOYEE); // Default role
         user.setFloorId(signupRequest.getFloorId());
         user.setDepartment(signupRequest.getDepartment());
-        user.setPhoneNumber(signupRequest.getPhoneNumber());
         user.setEmployeeId(signupRequest.getEmployeeId());
-        user.setIsActive(true);
-        user.setEmailVerified(false); // Email verification can be implemented later
+        user.setPhoneNumber(signupRequest.getPhoneNumber());
+        user.setFoodCardBalance(0.0); // Default balance
 
         User result = userRepository.save(user);
 
         return ResponseEntity.ok(new ApiResponse<>(true, "User registered successfully"));
-    }
-
-    @Operation(summary = "Get current user", description = "Get currently authenticated user information")
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        
-        return ResponseEntity.ok(userPrincipal);
     }
 
     @Operation(summary = "Refresh token", description = "Refresh JWT token using refresh token")

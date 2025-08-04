@@ -12,8 +12,11 @@ import {
   Button,
 } from '@mui/material';
 import { Receipt, Refresh } from '@mui/icons-material';
+import { useAppSelector } from '../hooks/redux';
 
 const OrdersPage: React.FC = () => {
+  const { user } = useAppSelector((state) => state.auth);
+  
   const orders = [
     {
       id: 'ORD-001',
@@ -124,7 +127,7 @@ const OrdersPage: React.FC = () => {
                     Total: ₹{order.total}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {order.status === 'DELIVERED' && (
+                    {order.status === 'DELIVERED' && user?.role !== 'CAFETERIA_MANAGER' && (
                       <Button variant="outlined" size="small">
                         Reorder
                       </Button>
