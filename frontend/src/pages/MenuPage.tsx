@@ -152,7 +152,7 @@ const MenuPage: React.FC = () => {
       isAvailable: false,
       tags: ['Fragrant', 'Traditional', 'Heavy'],
     },
-  ];
+  ], []);
 
   const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))];
   const vendors = ['All', ...Array.from(new Set(menuItems.map(item => item.vendor)))];
@@ -168,7 +168,7 @@ const MenuPage: React.FC = () => {
     });
   }, [menuItems, searchTerm, selectedCategory, selectedVendor]);
 
-  const addToCart = (item: MenuItem) => {
+  const addToCart = (item: MenuItemType) => {
     setCartItems(prev => {
       const existingItem = prev.find(cartItem => cartItem.id === item.id);
       if (existingItem) {

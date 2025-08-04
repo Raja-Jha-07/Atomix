@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -24,7 +24,6 @@ import {
   Select,
   Button,
   Rating,
-  Tooltip,
   Alert,
   CircularProgress,
 } from '@mui/material';
@@ -73,7 +72,7 @@ const VendorList: React.FC<VendorListProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedVendor, setSelectedVendor] = useState<VendorResponse | null>(null);
 
-  const loadVendors = async () => {
+  const loadVendors = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -96,11 +95,11 @@ const VendorList: React.FC<VendorListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, page, rowsPerPage, localStatusFilter, localTypeFilter, order]);
 
   useEffect(() => {
     loadVendors();
-  }, [page, rowsPerPage, order, searchTerm, localStatusFilter, localTypeFilter]);
+  }, [loadVendors]);
 
   const handleSort = (field: string) => {
     const isAsc = order.field === field && order.direction === 'asc';
