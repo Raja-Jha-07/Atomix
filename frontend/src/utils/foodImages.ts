@@ -1,58 +1,76 @@
-// Food image mapping utility using public folder references
-// This approach avoids TypeScript import issues with PNG files
+// Food image mapping utility using assets folder references
+// Import images from assets for better bundling and optimization
+
+// Import all images from assets
+import masalaChai from '../assets/masala-chai.png';
+import poha from '../assets/poha.png';
+import upma from '../assets/upma.png';
+import idliSambar from '../assets/idli_sambar.png';
+import meduVada from '../assets/medu_vada.png';
+import omelette from '../assets/Omelette.png';
+import bhurjiPav from '../assets/bhurji_pav.png';
+import pavBhaji from '../assets/pav_bhaji.png';
+import vegThali from '../assets/veg_thali.png';
+import nonVegThali from '../assets/non_veg_thali.png';
+import choleBhature from '../assets/chole_bhature.png';
+import dalKhichadi from '../assets/dal_khichadi.png';
+import sabudanaKhichadi from '../assets/sabudana_khichadi.png';
+import sandwich from '../assets/sandwich.png';
+import juice from '../assets/juice.png';
+import juice1 from '../assets/juice_1.png';
 
 // Mapping of food item names (case-insensitive) to their images
 const foodImageMap: Record<string, string> = {
   // Beverages
-  'masala chai': '/images/masala-chai.png',
-  'chai': '/images/masala-chai.png',
-  'tea': '/images/masala-chai.png',
-  'juice': '/images/juice.png',
-  'fresh juice': '/images/juice_1.png',
-  'fruit juice': '/images/juice_1.png',
+  'masala chai': masalaChai,
+  'chai': masalaChai,
+  'tea': masalaChai,
+  'juice': juice,
+  'fresh juice': juice1,
+  'fruit juice': juice1,
 
   // Breakfast items
-  'poha': '/images/poha.png',
-  'upma': '/images/upma.png',
-  'idli sambar': '/images/idli_sambar.png',
-  'idli': '/images/idli_sambar.png',
-  'medu vada': '/images/medu_vada.png',
-  'vada': '/images/medu_vada.png',
-  'omelette': '/images/Omelette.png',
-  'bhurji pav': '/images/bhurji_pav.png',
-  'egg bhurji': '/images/bhurji_pav.png',
+  'poha': poha,
+  'upma': upma,
+  'idli sambar': idliSambar,
+  'idli': idliSambar,
+  'medu vada': meduVada,
+  'vada': meduVada,
+  'omelette': omelette,
+  'bhurji pav': bhurjiPav,
+  'egg bhurji': bhurjiPav,
 
   // Main dishes
-  'pav bhaji': '/images/pav_bhaji.png',
-  'veg thali': '/images/veg_thali.png',
-  'vegetarian thali': '/images/veg_thali.png',
-  'thali': '/images/veg_thali.png',
-  'non veg thali': '/images/non_veg_thali.png',
-  'non-veg thali': '/images/non_veg_thali.png',
-  'chicken thali': '/images/non_veg_thali.png',
-  'chole bhature': '/images/chole_bhature.png',
-  'chole': '/images/chole_bhature.png',
-  'dal khichadi': '/images/dal_khichadi.png',
-  'khichadi': '/images/dal_khichadi.png',
-  'dal': '/images/dal_khichadi.png',
-  'sabudana khichadi': '/images/sabudana_khichadi.png',
-  'sabudana': '/images/sabudana_khichadi.png',
+  'pav bhaji': pavBhaji,
+  'veg thali': vegThali,
+  'vegetarian thali': vegThali,
+  'thali': vegThali,
+  'non veg thali': nonVegThali,
+  'non-veg thali': nonVegThali,
+  'chicken thali': nonVegThali,
+  'chole bhature': choleBhature,
+  'chole': choleBhature,
+  'dal khichadi': dalKhichadi,
+  'khichadi': dalKhichadi,
+  'dal': dalKhichadi,
+  'sabudana khichadi': sabudanaKhichadi,
+  'sabudana': sabudanaKhichadi,
 
   // Snacks
-  'sandwich': '/images/sandwich.png',
-  'veg sandwich': '/images/sandwich.png',
-  'grilled sandwich': '/images/sandwich.png',
+  'sandwich': sandwich,
+  'veg sandwich': sandwich,
+  'grilled sandwich': sandwich,
 
   // Popular dishes (fallback mappings)
-  'chicken biryani': '/images/non_veg_thali.png',
-  'biryani': '/images/non_veg_thali.png',
-  'paneer butter masala': '/images/veg_thali.png',
-  'paneer': '/images/veg_thali.png',
-  'dal tadka': '/images/dal_khichadi.png',
-  'butter chicken': '/images/non_veg_thali.png',
-  'masala dosa': '/images/idli_sambar.png',
-  'dosa': '/images/idli_sambar.png',
-  'paneer tikka': '/images/veg_thali.png',
+  'chicken biryani': nonVegThali,
+  'biryani': nonVegThali,
+  'paneer butter masala': vegThali,
+  'paneer': vegThali,
+  'dal tadka': dalKhichadi,
+  'butter chicken': nonVegThali,
+  'masala dosa': idliSambar,
+  'dosa': idliSambar,
+  'paneer tikka': vegThali,
 };
 
 /**
@@ -76,61 +94,53 @@ export const getFoodImage = (itemName: string): string => {
   }
   
   // Default fallback image
-  return '/images/veg_thali.png'; // Use veg thali as default
+  return vegThali; // Use veg thali as default
 };
 
 /**
- * Get all available food images as URLs
- * @returns Object containing all food image URLs
+ * Get all available food images as imported assets
+ * @returns Object containing all food image imports
  */
 export const getAllFoodImages = () => ({
-  masalaChai: '/images/masala-chai.png',
-  poha: '/images/poha.png',
-  upma: '/images/upma.png',
-  idliSambar: '/images/idli_sambar.png',
-  meduVada: '/images/medu_vada.png',
-  omelette: '/images/Omelette.png',
-  bhurjiPav: '/images/bhurji_pav.png',
-  pavBhaji: '/images/pav_bhaji.png',
-  vegThali: '/images/veg_thali.png',
-  nonVegThali: '/images/non_veg_thali.png',
-  choleBhature: '/images/chole_bhature.png',
-  dalKhichadi: '/images/dal_khichadi.png',
-  sabudanaKhichadi: '/images/sabudana_khichadi.png',
-  sandwich: '/images/sandwich.png',
-  juice: '/images/juice.png',
-  juice1: '/images/juice_1.png',
+  masalaChai,
+  poha,
+  upma,
+  idliSambar,
+  meduVada,
+  omelette,
+  bhurjiPav,
+  pavBhaji,
+  vegThali,
+  nonVegThali,
+  choleBhature,
+  dalKhichadi,
+  sabudanaKhichadi,
+  sandwich,
+  juice,
+  juice1,
 });
 
 /**
- * Copy images to public folder helper function
- * This function provides instructions for manually copying images
+ * Image assets information
+ * This provides the imported asset references for direct use
  */
-export const copyImagesToPublic = () => {
-  console.log(`
-To set up images, copy all PNG files from src/assets/ to public/images/:
-1. Create directory: public/images/
-2. Copy all .png files from src/assets/ to public/images/
-3. Images will be accessible at /images/filename.png
-
-Files to copy:
-- masala-chai.png
-- poha.png
-- upma.png
-- idli_sambar.png
-- medu_vada.png
-- Omelette.png
-- bhurji_pav.png
-- pav_bhaji.png
-- veg_thali.png
-- non_veg_thali.png
-- chole_bhature.png
-- dal_khichadi.png
-- sabudana_khichadi.png
-- sandwich.png
-- juice.png
-- juice_1.png
-  `);
+export const imageAssets = {
+  masalaChai,
+  poha,
+  upma,
+  idliSambar,
+  meduVada,
+  omelette,
+  bhurjiPav,
+  pavBhaji,
+  vegThali,
+  nonVegThali,
+  choleBhature,
+  dalKhichadi,
+  sabudanaKhichadi,
+  sandwich,
+  juice,
+  juice1,
 };
 
 export default getFoodImage; 
