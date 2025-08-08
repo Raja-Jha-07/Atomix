@@ -14,10 +14,12 @@ import {
   Stack,
 } from '@mui/material';
 import { Receipt, Refresh, Restaurant, ShoppingBag } from '@mui/icons-material';
+import { useAppSelector } from '../hooks/redux';
 import orderService, { OrderResponse } from '../services/orderService';
 import { getFoodImage } from '../utils/foodImages';
 
 const OrdersPage: React.FC = () => {
+  const { user } = useAppSelector((state) => state.auth);
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -307,7 +309,7 @@ const OrdersPage: React.FC = () => {
                     Total: ₹{order.totalAmount}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {order.status === 'DELIVERED' && (
+                    {order.status === 'DELIVERED' && user?.role !== 'CAFETERIA_MANAGER' && (
                       <Button variant="outlined" size="small">
                         Reorder
                       </Button>

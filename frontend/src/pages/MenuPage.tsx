@@ -82,6 +82,9 @@ const MenuPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   
+  // Check if user is a manager (for role-based restrictions)
+  const isManager = user?.role === 'CAFETERIA_MANAGER';
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedVendor, setSelectedVendor] = useState('All');
@@ -720,20 +723,32 @@ const MenuPage: React.FC = () => {
                       )}
                     </Box>
 
-                    {item.isAvailable ? (
-                      quantity > 0 ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <IconButton onClick={() => removeFromCart(item.id)} size="small">
-                            <Remove />
-                          </IconButton>
-                          <Typography sx={{ mx: 1, minWidth: '20px', textAlign: 'center' }}>
-                            {quantity}
-                          </Typography>
-                          <IconButton onClick={() => addToCart(item)} size="small">
-                            <Add />
-                          </IconButton>
-                        </Box>
-                      ) : (
+                    {(() => {
+                      if (!item.isAvailable) {
+                        return <Chip label="Not Available" color="default" />;
+                      }
+                      
+                      if (isManager) {
+                        return <Chip label="View Only" color="info" variant="outlined" />;
+                      }
+                      
+                      if (quantity > 0) {
+                        return (
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <IconButton onClick={() => removeFromCart(item.id)} size="small">
+                              <Remove />
+                            </IconButton>
+                            <Typography sx={{ mx: 1, minWidth: '20px', textAlign: 'center' }}>
+                              {quantity}
+                            </Typography>
+                            <IconButton onClick={() => addToCart(item)} size="small">
+                              <Add />
+                            </IconButton>
+                          </Box>
+                        );
+                      }
+                      
+                      return (
                         <Button
                           variant="contained"
                           startIcon={<Add />}
@@ -742,10 +757,8 @@ const MenuPage: React.FC = () => {
                         >
                           Add
                         </Button>
-                      )
-                    ) : (
-                      <Chip label="Not Available" color="default" />
-                    )}
+                      );
+                    })()}
                   </Box>
                 </CardContent>
               </Card>
@@ -767,8 +780,8 @@ const MenuPage: React.FC = () => {
         </Box>
       )}
 
-      {/* Floating Cart Button */}
-      {getTotalItems() > 0 && (
+      {/* Floating Cart Button - Hidden for managers */}
+      {getTotalItems() > 0 && !isManager && (
         <Fab
           color="primary"
           onClick={() => setShowCart(true)}
@@ -784,13 +797,14 @@ const MenuPage: React.FC = () => {
         </Fab>
       )}
 
-      {/* Cart Drawer */}
-      <Drawer
-        anchor="right"
-        open={showCart}
-        onClose={() => setShowCart(false)}
-        PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}
-      >
+      {/* Cart Drawer - Hidden for managers */}
+      {!isManager && (
+        <Drawer
+          anchor="right"
+          open={showCart}
+          onClose={() => setShowCart(false)}
+          PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}
+        >
         <Box sx={{ p: 2 }}>
           <Typography variant="h6" gutterBottom>
             Your Order
@@ -843,6 +857,7 @@ const MenuPage: React.FC = () => {
           </Box>
         </Box>
       </Drawer>
+      )}
 
       {/* Payment Method Selection Dialog */}
       <Dialog open={showPaymentDialog} onClose={() => setShowPaymentDialog(false)} maxWidth="sm" fullWidth>

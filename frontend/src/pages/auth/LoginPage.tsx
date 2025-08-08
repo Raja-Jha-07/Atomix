@@ -51,9 +51,24 @@ const LoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
   
-  const { isLoading, error, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isLoading, error, isAuthenticated, user } = useAppSelector((state) => state.auth);
   
-
+  // Role-based redirect function
+  const getRoleBasedRoute = () => {
+    if (!user) return '/dashboard';
+    
+    switch (user.role) {
+      case 'VENDOR':
+        return '/vendor-portal';
+      case 'CAFETERIA_MANAGER':
+        return '/manager-dashboard';
+      case 'ADMIN':
+        return '/dashboard';
+      case 'EMPLOYEE':
+      default:
+        return '/dashboard';
+    }
+  };
 
   const {
     register,
@@ -67,9 +82,9 @@ const LoginPage: React.FC = () => {
     dispatch(clearError());
   }, [dispatch]);
 
-  // If already authenticated, redirect to dashboard
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+  // If already authenticated, redirect based on role
+  if (isAuthenticated && user) {
+    return <Navigate to={getRoleBasedRoute()} replace />;
   }
 
   const onSubmit = async (data: LoginForm) => {
@@ -330,14 +345,13 @@ const LoginPage: React.FC = () => {
                   </Button>
                   <Button 
                     onClick={() => {
-                      console.log('🧪 Testing invalid credentials...');
-                      onSubmit({ email: 'invalid@test.com', password: 'wrongpass' });
+                      console.log('🧪 Testing manager auth...');
+                      onSubmit({ email: 'manager@atomix.com', password: 'password123' });
                     }}
                     variant="outlined"
                     size="small"
-                    color="error"
                   >
-                    ❌ Test Invalid
+                    👨‍💼 Test Manager
                   </Button>
                 </Stack>
 
@@ -510,7 +524,10 @@ const LoginPage: React.FC = () => {
                 Admin: admin@atomix.com / password123
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                Employee: john.doe@company.com / password123
+                Employee: employee@atomix.com / password123
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                Manager: manager@atomix.com / password123
               </Typography>
             </Paper>
           </Box>
