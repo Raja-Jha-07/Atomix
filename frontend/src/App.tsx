@@ -80,7 +80,7 @@ const App: React.FC = () => {
             
             {/* Protected routes */}
             <Route path="/dashboard" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE','CAFETERIA_MANAGER','VENDOR']}>
                 <Dashboard />
               </ProtectedRoute>
             } />
