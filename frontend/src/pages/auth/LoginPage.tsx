@@ -67,6 +67,8 @@ const LoginPage: React.FC = () => {
     dispatch(clearError());
   }, [dispatch]);
 
+
+
   // If already authenticated, redirect to dashboard
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -114,29 +116,57 @@ const LoginPage: React.FC = () => {
     },
   ];
 
+
+
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-        display: 'flex',
-        alignItems: 'center',
-        py: 4,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
+    <>
+      {/* Global fixed background to prevent white screen */}
+      <Box
+        sx={{
+          position: 'fixed',
           top: 0,
           left: 0,
-          right: 0,
-          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+          zIndex: -2,
+        }}
+      />
+      
+      {/* Pattern overlay */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
           background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.03"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-        },
-      }}
+          zIndex: -1,
+          pointerEvents: 'none',
+        }}
+      />
+      
+      {/* Main content container */}
+      <Box
+        sx={{
+          minHeight: '100vh',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          py: { xs: 1, sm: 2, md: 3 },
+          position: 'relative',
+          zIndex: 1,
+        }}
     >
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: '80vh' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          minHeight: { xs: '85vh', sm: '90vh', md: '85vh' },
+          maxHeight: { xs: '100vh', sm: 'none', md: 'none' },
+          overflow: { xs: 'auto', sm: 'visible', md: 'visible' }
+        }}>
           {/* Left side - Features */}
           <Box 
             sx={{ 
@@ -147,7 +177,7 @@ const LoginPage: React.FC = () => {
             }}
           >
             {/* Logo and Title */}
-            <Box sx={{ mb: 6 }}>
+            <Box sx={{ mb: { xs: 3, md: 6 } }}>
               <Box
                 sx={{
                   width: 64,
@@ -183,12 +213,12 @@ const LoginPage: React.FC = () => {
             </Box>
 
             {/* Features Grid */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, mb: 4 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: { xs: 2, md: 3 }, mb: { xs: 2, md: 4 } }}>
               {features.map((feature, index) => (
                 <Paper
                   key={index}
                   sx={{
-                    p: 3,
+                    p: { xs: 2, md: 3 },
                     borderRadius: 3,
                     background: alpha(theme.palette.background.paper, 0.8),
                     backdropFilter: 'blur(10px)',
@@ -279,10 +309,17 @@ const LoginPage: React.FC = () => {
                 }}
               />
 
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
                 {/* Header */}
-                <Box sx={{ textAlign: 'center', mb: 4 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+                <Box sx={{ textAlign: 'center', mb: { xs: 2, sm: 3 } }}>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      fontWeight: 700, 
+                      mb: 1,
+                      fontSize: { xs: '1.5rem', sm: '2.125rem' } // h5 size on mobile, h4 size on larger screens
+                    }}
+                  >
                     Welcome Back
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
@@ -307,7 +344,14 @@ const LoginPage: React.FC = () => {
                 )}
 
                 {/* Test Mock Auth Button */}
-                <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                <Stack 
+                  direction="row" 
+                  spacing={1} 
+                  sx={{ 
+                    mb: 2,
+                    display: { xs: 'none', sm: 'flex' } // Hide test buttons on mobile
+                  }}
+                >
                   <Button 
                     onClick={() => {
                       console.log('🧪 Testing mock auth directly...');
@@ -327,6 +371,26 @@ const LoginPage: React.FC = () => {
                     size="small"
                   >
                     👨‍💼 Test Employee
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      console.log('🧪 Testing Cafeteria Manager auth...');
+                      onSubmit({ email: 'manager@atomix.com', password: 'password123' });
+                    }}
+                    variant="outlined"
+                    size="small"
+                  >
+                    👨‍💼 Test Cafeteria Manager
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      console.log('🧪 Testing Vendor auth...');
+                      onSubmit({ email: 'vendor@atomix.com', password: 'password123' });
+                    }}
+                    variant="outlined"
+                    size="small"
+                  >
+                    👨‍💼 Test Vendor
                   </Button>
                   <Button 
                     onClick={() => {
@@ -355,7 +419,7 @@ const LoginPage: React.FC = () => {
                     helperText={errors.email?.message}
                     {...register('email')}
                     sx={{
-                      mb: 2,
+                      mb: { xs: 1.5, sm: 2 },
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
                         background: alpha(theme.palette.background.paper, 0.6),
@@ -375,7 +439,7 @@ const LoginPage: React.FC = () => {
                     helperText={errors.password?.message}
                     {...register('password')}
                     sx={{
-                      mb: 3,
+                      mb: { xs: 2, sm: 3 },
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 2,
                         background: alpha(theme.palette.background.paper, 0.6),
@@ -403,7 +467,7 @@ const LoginPage: React.FC = () => {
                     disabled={isLoading}
                     sx={{
                       py: 1.5,
-                      mb: 3,
+                      mb: { xs: 2, sm: 3 },
                       borderRadius: 2,
                       fontSize: '1rem',
                       fontWeight: 600,
@@ -426,14 +490,14 @@ const LoginPage: React.FC = () => {
                   </Button>
 
                   {/* Divider */}
-                  <Divider sx={{ my: 3 }}>
+                  <Divider sx={{ my: { xs: 1.5, sm: 2 } }}>
                     <Typography variant="caption" color="text.secondary">
                       OR CONTINUE WITH
                     </Typography>
                   </Divider>
 
                   {/* Social Login Buttons */}
-                  <Stack spacing={2}>
+                  <Stack spacing={{ xs: 1, sm: 2 }}>
                     <Button
                       variant="outlined"
                       fullWidth
@@ -474,7 +538,7 @@ const LoginPage: React.FC = () => {
                   </Stack>
 
                   {/* Register Link */}
-                  <Box sx={{ textAlign: 'center', mt: 4 }}>
+                  <Box sx={{ textAlign: 'center', mt: { xs: 2, sm: 3 } }}>
                     <Typography variant="body2" color="text.secondary">
                       Don't have an account?{' '}
                       <Link 
@@ -493,11 +557,11 @@ const LoginPage: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Demo Credentials */}
+            {/* Demo Credentials
             <Paper
               sx={{
-                mt: 3,
-                p: 2,
+                mt: { xs: 1, sm: 2 },
+                p: { xs: 1, sm: 2 },
                 borderRadius: 2,
                 background: alpha(theme.palette.info.main, 0.05),
                 border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
@@ -512,11 +576,12 @@ const LoginPage: React.FC = () => {
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                 Employee: john.doe@company.com / password123
               </Typography>
-            </Paper>
+            </Paper> */}
           </Box>
         </Box>
       </Container>
     </Box>
+    </>
   );
 };
 
