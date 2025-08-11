@@ -12,6 +12,8 @@ import CafeteriaManagerDashboard from './pages/CafeteriaManagerDashboard';
 import PaymentPage from './pages/PaymentPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
@@ -118,6 +120,18 @@ const App: React.FC = () => {
             <Route path="/payments" element={
               <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER']}>
                 <PaymentPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/cart" element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER']}>
+                <CartPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/checkout" element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE', 'CAFETERIA_MANAGER']}>
+                <CheckoutPage />
               </ProtectedRoute>
             } />
             
