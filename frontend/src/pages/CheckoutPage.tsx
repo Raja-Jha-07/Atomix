@@ -17,11 +17,9 @@ import {
   ListItemText,
   Divider,
   Chip,
-  Paper,
 } from '@mui/material';
 import {
   CheckCircle,
-  Error,
   Payment,
   ArrowBack,
   ShoppingCart,
@@ -118,7 +116,7 @@ const CheckoutPage: React.FC = () => {
         setConfirmDialogOpen(true);
       } else {
         const errorMessage = result.error || 'Failed to create order';
-        throw { message: errorMessage };
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
       console.error('Order creation failed:', error);

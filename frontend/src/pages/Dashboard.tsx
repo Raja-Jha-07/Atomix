@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   Grid,
@@ -37,7 +37,6 @@ const Dashboard: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const theme = useTheme();
-  const [loading, setLoading] = useState(false);
 
   // Get food card balance from Redux state (persisted locally)
   const foodCardBalance = user?.foodCardBalance || 0;
@@ -341,15 +340,8 @@ const Dashboard: React.FC = () => {
           </IconButton>
         </Box>
         
-        {loading && (
-          <LinearProgress 
-            sx={{ 
-              mb: 2,
-              borderRadius: 1,
-              height: 4,
-            }} 
-          />
-        )}
+        <Box sx={{ mb: 2 }}/>
+
       </Box>
 
       {/* Employee Stats */}
