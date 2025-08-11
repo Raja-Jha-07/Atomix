@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -21,6 +21,13 @@ const PaymentPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [refreshHistory, setRefreshHistory] = useState(0);
+
+  // Debug: Check if environment variables are loaded
+  useEffect(() => {
+    console.log('🔧 Payment Page Debug:');
+    console.log('API URL:', process.env.REACT_APP_API_URL);
+    console.log('Razorpay Key:', process.env.REACT_APP_RAZORPAY_KEY_ID);
+  }, []);
 
   const handleTopUpSuccess = () => {
     // Trigger payment history refresh
