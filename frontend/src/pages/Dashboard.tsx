@@ -7,7 +7,6 @@ import {
   Typography,
   Chip,
   Button,
-  LinearProgress,
   alpha,
   useTheme,
   IconButton,
