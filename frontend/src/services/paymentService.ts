@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8083/api/v1';
 
 // Payment interfaces matching backend DTOs
 export interface PaymentMethod {

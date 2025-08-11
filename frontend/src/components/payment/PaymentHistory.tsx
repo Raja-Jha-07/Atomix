@@ -27,7 +27,7 @@ import {
   Pending,
   Warning,
 } from '@mui/icons-material';
-import { paymentService, PaymentHistoryResponse } from '../../services/paymentService';
+import { paymentHistoryService, PaymentTransaction } from '../../services/paymentHistoryService';
 
 interface PaymentHistoryProps {
   userId?: number; // For admin view
@@ -38,7 +38,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
   userId,
   title = 'Payment History',
 }) => {
-  const [payments, setPayments] = useState<PaymentHistoryResponse[]>([]);
+  const [payments, setPayments] = useState<PaymentTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [page, setPage] = useState(0);
@@ -50,18 +50,16 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
       setLoading(true);
       setError('');
       
-      const response = userId 
-        ? await paymentService.getUserPaymentHistory(userId, page, rowsPerPage)
-        : await paymentService.getPaymentHistory(page, rowsPerPage);
-      
+      const response = paymentHistoryService.getPaymentHistoryPaginated(page, rowsPerPage);
       setPayments(response.content);
       setTotalCount(response.totalElements);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load payment history');
+      setError('Failed to load payment history');
+      console.error('Payment history fetch error:', err);
     } finally {
       setLoading(false);
     }
-  }, [userId, page, rowsPerPage]);
+  }, [page, rowsPerPage]);
 
   useEffect(() => {
     fetchPayments();
@@ -78,16 +76,12 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'PAID':
+      case 'SUCCESS':
         return <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />;
       case 'FAILED':
         return <Cancel sx={{ fontSize: 16, color: 'error.main' }} />;
       case 'PENDING':
-      case 'PROCESSING':
         return <Pending sx={{ fontSize: 16, color: 'warning.main' }} />;
-      case 'REFUNDED':
-      case 'PARTIALLY_REFUNDED':
-        return <Warning sx={{ fontSize: 16, color: 'info.main' }} />;
       default:
         return undefined;
     }
@@ -95,16 +89,12 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
 
   const getStatusColor = (status: string): 'success' | 'error' | 'warning' | 'info' | 'default' => {
     switch (status) {
-      case 'PAID':
+      case 'SUCCESS':
         return 'success';
       case 'FAILED':
         return 'error';
       case 'PENDING':
-      case 'PROCESSING':
         return 'warning';
-      case 'REFUNDED':
-      case 'PARTIALLY_REFUNDED':
-        return 'info';
       default:
         return 'default';
     }
@@ -112,7 +102,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'FOOD_CARD_TOPUP':
+      case 'TOP_UP':
         return <AccountBalance sx={{ fontSize: 16, color: 'primary.main' }} />;
       case 'ORDER_PAYMENT':
         return <ShoppingCart sx={{ fontSize: 16, color: 'secondary.main' }} />;
@@ -210,14 +200,14 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                     <TableRow key={payment.id} hover>
                       <TableCell>
                         <Typography variant="body2">
-                          {formatDate(payment.createdAt)}
+                          {formatDate(payment.timestamp)}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {getTypeIcon(payment.paymentType)}
+                          {getTypeIcon(payment.type)}
                           <Typography variant="body2">
-                            {payment.paymentType === 'FOOD_CARD_TOPUP' ? 'Top-up' : 'Order'}
+                            {payment.type === 'TOP_UP' ? 'Top-up' : 'Order'}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -225,9 +215,9 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                         <Typography variant="body2">
                           {payment.description || (payment.orderNumber ? `Order #${payment.orderNumber}` : 'N/A')}
                         </Typography>
-                        {payment.vendorName && (
+                        {payment.razorpayPaymentId && (
                           <Typography variant="caption" color="text.secondary">
-                            {payment.vendorName}
+                            ID: {payment.razorpayPaymentId}
                           </Typography>
                         )}
                       </TableCell>
@@ -240,32 +230,20 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                         <Typography variant="body2" fontWeight="medium">
                           ₹{payment.amount.toFixed(2)}
                         </Typography>
-                        {payment.refundAmount > 0 && (
-                          <Typography variant="caption" color="info.main">
-                            Refunded: ₹{payment.refundAmount.toFixed(2)}
-                          </Typography>
-                        )}
                       </TableCell>
                       <TableCell>
                         <Chip
-                          icon={getStatusIcon(payment.paymentStatus)}
-                          label={payment.paymentStatus}
+                          icon={getStatusIcon(payment.status)}
+                          label={payment.status}
                           size="small"
-                          color={getStatusColor(payment.paymentStatus)}
+                          color={getStatusColor(payment.status)}
                           variant="outlined"
                         />
-                        {payment.failureReason && (
-                          <Tooltip title={payment.failureReason}>
-                            <Typography variant="caption" color="error.main" sx={{ display: 'block' }}>
-                              Failed
-                            </Typography>
-                          </Tooltip>
-                        )}
                       </TableCell>
                       {userId && (
                         <TableCell>
                           <Typography variant="body2" fontFamily="monospace">
-                            {payment.paymentId}
+                            {payment.razorpayPaymentId || payment.id}
                           </Typography>
                         </TableCell>
                       )}

@@ -32,33 +32,15 @@ import {
 } from '@mui/icons-material';
 import { useAppSelector } from '../hooks/redux';
 import { useNavigate } from 'react-router-dom';
-import { paymentService } from '../services/paymentService';
 
 const Dashboard: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const theme = useTheme();
-  const [foodCardBalance, setFoodCardBalance] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
-  // Fetch food card balance for employees
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (user?.role === 'EMPLOYEE') {
-        try {
-          setLoading(true);
-          const response = await paymentService.getFoodCardBalance();
-          setFoodCardBalance(response.balance);
-        } catch (error) {
-          console.error('Failed to fetch food card balance:', error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchBalance();
-  }, [user]);
+  // Get food card balance from Redux state (persisted locally)
+  const foodCardBalance = user?.foodCardBalance || 0;
 
   // Admin/Manager Stats
   const adminStats = [
