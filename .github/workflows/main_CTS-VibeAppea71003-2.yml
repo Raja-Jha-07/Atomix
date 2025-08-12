@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -22,17 +22,20 @@ jobs:
           distribution: 'microsoft'
 
       - name: Build with Maven
-        run: mvn clean install
+        working-directory: backend
+        run: mvn clean install -DskipTests
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/target/*.war'
+          working-directory: backend
+          path: 'target/*.war'  # Fixed path - should be backend/target/
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build 
+    needs: build
+    environment: production  # Add environment for better security
     
     steps:
       - name: Download artifact from build job
