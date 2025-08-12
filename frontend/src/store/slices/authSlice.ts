@@ -26,7 +26,7 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: null,
+  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null,
   token: localStorage.getItem('token'),
   isAuthenticated: !!localStorage.getItem('token'),
   isLoading: false,
@@ -78,11 +78,20 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
+      // Preserve food card balance for next login
+      const currentBalance = state.user?.foodCardBalance;
+      
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
       localStorage.removeItem('token');
+      
+      // Store only the balance to preserve it for next login
+      if (currentBalance !== undefined) {
+        localStorage.setItem('preservedBalance', currentBalance.toString());
+      }
+      localStorage.removeItem('user');
     },
     clearError: (state) => {
       state.error = null;
@@ -90,6 +99,7 @@ const authSlice = createSlice({
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
+        localStorage.setItem('user', JSON.stringify(state.user));
       }
     },
   },
@@ -102,10 +112,29 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
+        
+        // Preserve local food card balance if it exists
+        const existingUser = localStorage.getItem('user');
+        const preservedBalance = localStorage.getItem('preservedBalance');
+        const localFoodCardBalance = existingUser 
+          ? JSON.parse(existingUser).foodCardBalance 
+          : (preservedBalance ? parseFloat(preservedBalance) : null);
+        
+        state.user = {
+          ...action.payload.user,
+          // Use local balance if it exists and is greater than backend balance
+          foodCardBalance: localFoodCardBalance > (action.payload.user.foodCardBalance || 0)
+            ? localFoodCardBalance 
+            : action.payload.user.foodCardBalance
+        };
+        
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.error = null;
+        
+        // Save merged user data to localStorage and clear preserved balance
+        localStorage.setItem('user', JSON.stringify(state.user));
+        localStorage.removeItem('preservedBalance');
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -134,8 +163,27 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
+        
+        // Preserve local food card balance if it exists
+        const existingUser = localStorage.getItem('user');
+        const preservedBalance = localStorage.getItem('preservedBalance');
+        const localFoodCardBalance = existingUser 
+          ? JSON.parse(existingUser).foodCardBalance 
+          : (preservedBalance ? parseFloat(preservedBalance) : null);
+        
+        state.user = {
+          ...action.payload,
+          // Use local balance if it exists and is greater than backend balance
+          foodCardBalance: localFoodCardBalance > (action.payload.foodCardBalance || 0)
+            ? localFoodCardBalance 
+            : action.payload.foodCardBalance
+        };
+        
         state.isAuthenticated = true;
+        
+        // Save merged user data to localStorage and clear preserved balance
+        localStorage.setItem('user', JSON.stringify(state.user));
+        localStorage.removeItem('preservedBalance');
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.isLoading = false;

@@ -15,7 +15,11 @@ import {
 } from '@mui/material';
 import { AccountBalance, Add } from '@mui/icons-material';
 import PaymentMethodSelector from './PaymentMethodSelector';
+import RazorpayTestInfo from './RazorpayTestInfo';
 import { paymentService } from '../../services/paymentService';
+import { useAppDispatch } from '../../hooks/redux';
+import { updateUser } from '../../store/slices/authSlice';
+import { paymentHistoryService } from '../../services/paymentHistoryService';
 
 interface FoodCardTopUpProps {
   open: boolean;
@@ -32,6 +36,7 @@ const FoodCardTopUp: React.FC<FoodCardTopUpProps> = ({
   onSuccess,
   currentBalance,
 }) => {
+  const dispatch = useAppDispatch();
   const [amount, setAmount] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('RAZORPAY');
   const [loading, setLoading] = useState(false);
@@ -74,6 +79,54 @@ const FoodCardTopUp: React.FC<FoodCardTopUpProps> = ({
       setLoading(true);
       setError('');
       setStep('processing');
+
+      // MOCK FOR TESTING - Remove this in production
+      if (paymentMethod === 'RAZORPAY') {
+        // Simulate Razorpay payment for testing
+        const mockRazorpayOptions = {
+          key: 'rzp_test_HYaOsl8oUnHAtT',
+          amount: Number(amount) * 100,
+          currency: 'INR',
+          name: 'Atomix Cafeteria',
+          description: `Food Card Top-up: ₹${amount}`,
+          handler: (response: any) => {
+            console.log('Payment Success:', response);
+            // Update food card balance in Redux store
+            const newBalance = currentBalance + Number(amount);
+            dispatch(updateUser({ foodCardBalance: newBalance }));
+            
+            // Add to payment history
+            paymentHistoryService.addPaymentTransaction({
+              type: 'TOP_UP',
+              amount: Number(amount),
+              paymentMethod: 'Razorpay',
+              status: 'SUCCESS',
+              description: `Food Card Top-up: ₹${amount}`,
+              razorpayPaymentId: response.razorpay_payment_id,
+            });
+            
+            onSuccess();
+            handleClose();
+          },
+          modal: {
+            ondismiss: () => {
+              setError('Payment cancelled');
+              setStep('payment');
+              setLoading(false);
+            }
+          }
+        };
+        
+        // Load and open Razorpay
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => {
+          const razorpay = new (window as any).Razorpay(mockRazorpayOptions);
+          razorpay.open();
+        };
+        document.body.appendChild(script);
+        return;
+      }
 
       const response = await paymentService.topUpFoodCard({
         amount: Number(amount),
@@ -205,6 +258,12 @@ const FoodCardTopUp: React.FC<FoodCardTopUpProps> = ({
           excludeMethods={['FOOD_CARD']} // Exclude food card for top-ups
           title="Choose Payment Method"
         />
+
+        {paymentMethod === 'RAZORPAY' && (
+          <Box sx={{ mt: 2 }}>
+            <RazorpayTestInfo />
+          </Box>
+        )}
 
         {error && (
           <Alert severity="error" sx={{ mt: 2 }}>
