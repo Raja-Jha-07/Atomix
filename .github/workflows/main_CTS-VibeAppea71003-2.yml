@@ -1,4 +1,4 @@
-name: Build and deploy WAR app to Azure Web App - CTS-VibeAppea71003-2
+name: Build and deploy JAR app to Azure Web App - CTS-VibeAppea71003-2
 
 on:
   push:
@@ -25,12 +25,19 @@ jobs:
         working-directory: backend
         run: mvn clean install -DskipTests
 
+      - name: Debug - List built artifacts
+        working-directory: backend
+        run: |
+          echo "Contents of target directory:"
+          ls -la target/
+          echo "JAR files found:"
+          find target/ -name "*.jar" -type f
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          working-directory: backend
-          path: 'target/*.war'
+          path: 'backend/target/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
@@ -42,11 +49,18 @@ jobs:
         with:
           name: java-app
       
+      - name: Debug - Verify downloaded artifacts
+        run: |
+          echo "Contents of current directory:"
+          ls -la
+          echo "JAR files found:"
+          find . -name "*.jar" -type f
+      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'CTS-VibeAppea71003-2'
           slot-name: 'Production'
-          package: '*.war'
+          package: '*.jar'
           publish-profile: ${{ secrets.__publishingprofilesecretname__ }}
