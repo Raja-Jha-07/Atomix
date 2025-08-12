@@ -29,7 +29,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: 'backend/target/*.war'  # Fixed path - should be backend/target/
+          working-directory: backend
+          path: 'target/*.war'  # Fixed path - should be backend/target/
 
   deploy:
     runs-on: ubuntu-latest
@@ -49,4 +50,4 @@ jobs:
           app-name: 'CTS-VibeAppea71003-2'
           slot-name: 'Production'
           package: '*.war'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.__publishingprofilesecretname__ }}
