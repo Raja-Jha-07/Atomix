@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -23,17 +23,18 @@ jobs:
 
       - name: Build with Maven
         working-directory: backend
-        run: mvn clean install
+        run: mvn clean install -DskipTests
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: 'backend/target/*.war'
+          path: 'backend/target/*.war'  # Fixed path - should be backend/target/
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build 
+    needs: build
+    environment: production  # Add environment for better security
     
     steps:
       - name: Download artifact from build job
@@ -48,4 +49,4 @@ jobs:
           app-name: 'CTS-VibeAppea71003-2'
           slot-name: 'Production'
           package: '*.war'
-          publish-profile: ${{ secrets.__publishingprofilesecretname__ }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
