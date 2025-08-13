@@ -1,0 +1,29 @@
+{
+  "files": {
+    "main.css": "/static/css/main.170f7028.css",
+    "main.js": "/static/js/main.db5de45b.js",
+    "static/media/poha.png": "/static/media/poha.a2a967a9b306652d5708.png",
+    "static/media/veg_thali.png": "/static/media/veg_thali.002b89b6d0987c04d6ab.png",
+    "static/media/sandwich.png": "/static/media/sandwich.e91524b2ae27e5d6ffb0.png",
+    "static/media/juice_1.png": "/static/media/juice_1.d163151bbcb2f6bf0eba.png",
+    "static/media/masala-chai.png": "/static/media/masala-chai.9468e2ea01a94dcd25b5.png",
+    "static/media/medu_vada.png": "/static/media/medu_vada.c558385204916e1f02a9.png",
+    "static/media/Omelette.png": "/static/media/Omelette.65e96668526137cb75c8.png",
+    "static/media/dal_khichadi.png": "/static/media/dal_khichadi.d8122e919897e19be1ce.png",
+    "static/media/idli_sambar.png": "/static/media/idli_sambar.d5471cf1b3a29a2118de.png",
+    "static/media/sabudana_khichadi.png": "/static/media/sabudana_khichadi.8b9e34a971c4646088c9.png",
+    "static/media/non_veg_thali.png": "/static/media/non_veg_thali.608542f62a7b8d6148d0.png",
+    "static/media/pav_bhaji.png": "/static/media/pav_bhaji.1f176e6b01be1af158b5.png",
+    "static/media/juice.png": "/static/media/juice.ec8e058fd41ef27b23e8.png",
+    "static/media/bhurji_pav.png": "/static/media/bhurji_pav.43219c697b0d84657df8.png",
+    "static/media/upma.png": "/static/media/upma.41a7e212e3a70e896a1c.png",
+    "static/media/chole_bhature.png": "/static/media/chole_bhature.a68b52d1a432d57e00b4.png",
+    "index.html": "/index.html",
+    "main.170f7028.css.map": "/static/css/main.170f7028.css.map",
+    "main.db5de45b.js.map": "/static/js/main.db5de45b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.170f7028.css",
+    "static/js/main.db5de45b.js"
+  ]
+}
